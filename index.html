@@ -84,7 +84,7 @@
     <div id="calorieMacroSection" style="margin-top:2rem; text-align:left;">
       <h3>🎯 Calorie & Macro Calculator</h3>
       <label for="age">Age</label>
-      <input type="number" id="age" placeholder="Enter your age">
+      <input type="number" id="age" placeholder="Enter your age" />
       <label for="gender">Gender</label>
       <select id="gender">
         <option value="" disabled selected>Select gender</option>
@@ -102,7 +102,7 @@
       </select>
       <label for="cmHeight">Height</label>
       <div style="display: flex; gap: 8px;">
-        <input type="number" id="cmHeight" placeholder="Height">
+        <input type="number" id="cmHeight" placeholder="Height" />
         <select id="heightUnit" onchange="convertHeight()">
           <option value="cm">cm</option>
           <option value="in">in</option>
@@ -110,14 +110,14 @@
       </div>
       <label for="kgWeight">Weight</label>
       <div style="display: flex; gap: 8px;">
-        <input type="number" id="kgWeight" placeholder="Weight">
+        <input type="number" id="kgWeight" placeholder="Weight" />
         <select id="weightUnit" onchange="convertWeight()">
           <option value="kg">kg</option>
           <option value="lb">lb</option>
         </select>
       </div>
       <label for="wrist">Wrist Circumference (optional, cm)</label>
-      <input type="number" id="wrist" placeholder="Optional - for body fat %">
+      <input type="number" id="wrist" placeholder="Optional - for body fat %" />
       <button onclick="calculateCalories()">Calculate Daily Calories</button>
       <div id="calorieResults"></div>
     </div>
@@ -163,7 +163,11 @@
       const html = data.history.map(h =>
         `<li><strong>${h.date}</strong>: ${h.maintenance} kcal (BMI: ${h.bmi || "N/A"})</li>`
       ).join('');
+      // Remove old history if present to avoid duplicates
+      const oldSection = document.getElementById('historySection');
+      if (oldSection) oldSection.remove();
       const section = document.createElement('div');
+      section.id = 'historySection';
       section.innerHTML = `<h3>Your History</h3><ul style="text-align:left;">${html}</ul>`;
       container.appendChild(section);
     }
@@ -173,7 +177,11 @@
       const unit = document.getElementById('heightUnit').value;
       let value = parseFloat(input.value);
       if (isNaN(value)) return;
-      input.value = unit === 'in' ? (value / 2.54).toFixed(2) : (value * 2.54).toFixed(2);
+      if (unit === 'in') {
+        input.value = (value / 2.54).toFixed(2);
+      } else {
+        input.value = (value * 2.54).toFixed(2);
+      }
     }
 
     function convertWeight() {
@@ -181,7 +189,11 @@
       const unit = document.getElementById('weightUnit').value;
       let value = parseFloat(input.value);
       if (isNaN(value)) return;
-      input.value = unit === 'lb' ? (value / 0.453592).toFixed(2) : (value * 0.453592).toFixed(2);
+      if (unit === 'lb') {
+        input.value = (value / 0.453592).toFixed(2);
+      } else {
+        input.value = (value * 0.453592).toFixed(2);
+      }
     }
 
     function calculateCalories() {
@@ -204,25 +216,43 @@
 
       const tdee = bmr * activity;
       const protein = weight * 2;
-      const fats = weight * 0.9;
-      const carbs = (tdee - (protein * 4 + fats * 9)) / 4;
+      const fat = weight * 0.8;
+      const carbs = (tdee - (protein * 4 + fat * 9)) / 4;
 
-      const maintenance = tdee.toFixed(0);
-      const loss = (tdee - 500).toFixed(0);
-      const gain = (tdee + 500).toFixed(0);
+      // BMI calculation
+      const heightM = height / 100;
+      const bmi = (weight / (heightM * heightM)).toFixed(2);
 
-      document.getElementById('calorieResults').innerHTML = `
-        <strong>Estimated Daily Needs:</strong><br>
-        Maintenance: <strong>${maintenance}</strong> kcal<br>
-        For Weight Loss: <strong>${loss}</strong> kcal<br>
-        For Weight Gain: <strong>${gain}</strong> kcal<br><br>
-        <strong>Macronutrient Breakdown:</strong><br>
-        Protein: <strong>${protein.toFixed(1)}</strong> g<br>
-        Fats: <strong>${fats.toFixed(1)}</strong> g<br>
-        Carbs: <strong>${carbs.toFixed(1)}</strong> g
+      let bodyFat = "N/A";
+      const wrist = parseFloat(document.getElementById('wrist').value);
+      if (!isNaN(wrist) && wrist > 0) {
+        if (gender === 'female') {
+          const wristCm = wrist;
+          const waist = 70; // Placeholder for now, you can add more inputs
+          const hip = 90;
+          const forearm = 20;
+          // Simplified estimate
+          bodyFat = (163.205 * Math.log10(waist + hip - wrist) - 97.684 * Math.log10(height) - 78.387).toFixed(2);
+        } else {
+          // Male body fat estimate, placeholder formula
+          bodyFat = (495 / (1.0324 - 0.19077 * Math.log10(wrist) + 0.15456 * Math.log10(height)) - 450).toFixed(2);
+        }
+      }
+
+      const resultText = `
+        <strong>Maintenance Calories (TDEE):</strong> ${tdee.toFixed(0)} kcal<br/>
+        <strong>Protein:</strong> ${protein.toFixed(0)} g/day<br/>
+        <strong>Fat:</strong> ${fat.toFixed(0)} g/day<br/>
+        <strong>Carbohydrates:</strong> ${carbs.toFixed(0)} g/day<br/>
+        <strong>BMI:</strong> ${bmi}<br/>
+        <strong>Estimated Body Fat %:</strong> ${bodyFat}
       `;
 
-      saveUserData({ maintenance, loss, gain, protein: protein.toFixed(1), fats: fats.toFixed(1), carbs: carbs.toFixed(1) });
+      document.getElementById('calorieResults').innerHTML = resultText;
+
+      saveUserData({ maintenance: tdee.toFixed(0), bmi, protein: protein.toFixed(0), fat: fat.toFixed(0), carbs: carbs.toFixed(0), bodyFat });
+
+      if (loggedInUser) showHistory();
     }
   </script>
 </body>
