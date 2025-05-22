@@ -102,6 +102,11 @@
       margin-top: 1rem;
       max-width: 100%;
     }
+    #bmiChart-container {
+      position: relative;
+      height: 300px;
+      margin-top: 1rem;
+    }
   </style>
 </head>
 <body>
@@ -111,7 +116,7 @@
     <input type="number" id="weight" placeholder="Enter weight" step="0.1">
 
     <label for="unit">Unit</label>
-    <select id="unit">
+    <select id="unit" onchange="updatePlaceholders()">
       <option value="metric">kg/m</option>
       <option value="imperial">lbs/in</option>
     </select>
@@ -126,10 +131,25 @@
     <div id="result" class="result"></div>
     <div id="healthTips"></div>
     <div id="idealWeightTable"></div>
-    <canvas id="bmiChart"></canvas>
+    <div id="bmiChart-container">
+      <canvas id="bmiChart"></canvas>
+    </div>
   </div>
 
   <script>
+    function updatePlaceholders() {
+      const unit = document.getElementById('unit').value;
+      const weightInput = document.getElementById('weight');
+      const heightInput = document.getElementById('height');
+      if (unit === 'metric') {
+        weightInput.placeholder = 'Enter weight in kg';
+        heightInput.placeholder = 'Enter height in meters';
+      } else {
+        weightInput.placeholder = 'Enter weight in lbs';
+        heightInput.placeholder = 'Enter height in inches';
+      }
+    }
+
     function calculateBMI() {
       const weight = parseFloat(document.getElementById('weight').value);
       const height = parseFloat(document.getElementById('height').value);
@@ -170,7 +190,6 @@
       document.getElementById('healthTips').textContent = tips[className];
       document.getElementById('healthTips').className = 'visible';
 
-      // Ideal weight table
       let min = 18.5 * height * height;
       let max = 24.9 * height * height;
       if (unit === 'imperial') {
@@ -216,6 +235,8 @@
       window.bmiChart.data.datasets[1].data[categoryIndex] = bmi;
       window.bmiChart.update();
     }
+
+    window.onload = updatePlaceholders;
   </script>
 </body>
 </html>
