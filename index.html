@@ -3,262 +3,178 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>BMI Calculator</title>
-  <link rel="icon" href="favicon.ico" type="image/x-icon" />
-  <link rel="icon" type="image/png" sizes="32x32" href="favicon.png" />
+  <title>Enhanced BMI Calculator</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f0f4f8;
+      background: #f4f9fd;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
+      min-height: 100vh;
       margin: 0;
       padding: 1rem;
     }
     .container {
       background: white;
       padding: 2rem;
-      border-radius: 8px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.1);
-      width: 320px;
-      text-align: center;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      max-width: 400px;
+      width: 100%;
     }
     h2 {
+      text-align: center;
       margin-bottom: 1rem;
-      position: relative;
-    }
-    .info-icon {
-      display: inline-block;
-      margin-left: 6px;
-      cursor: pointer;
-      border-bottom: 1px dotted #007BFF;
-      color: #007BFF;
-      font-weight: bold;
-    }
-    .tooltip {
-      visibility: hidden;
-      width: 250px;
-      background-color: #333;
-      color: #fff;
-      text-align: left;
-      border-radius: 6px;
-      padding: 10px;
-      position: absolute;
-      z-index: 1;
-      bottom: 125%; /* Show above */
-      left: 50%;
-      margin-left: -125px;
-      opacity: 0;
-      transition: opacity 0.3s;
-      font-size: 0.85rem;
-      line-height: 1.2;
-    }
-    .info-icon:hover .tooltip {
-      visibility: visible;
-      opacity: 1;
     }
     label {
       display: block;
-      text-align: left;
-      font-weight: 600;
-      margin-bottom: 0.25rem;
-      margin-top: 0.5rem;
+      margin: 0.5rem 0 0.25rem;
     }
-    input[type="number"] {
+    input, select {
       width: 100%;
-      padding: 8px;
-      margin-bottom: 0.25rem;
+      padding: 0.5rem;
+      margin-bottom: 1rem;
+      border-radius: 5px;
       border: 1px solid #ccc;
-      border-radius: 4px;
-      font-size: 1rem;
       box-sizing: border-box;
     }
-    .error {
-      color: #d93025;
-      font-size: 0.85rem;
-      height: 18px;
-      margin-bottom: 0.5rem;
-    }
     button {
-      background-color: #007BFF;
+      width: 100%;
+      padding: 0.7rem;
+      background-color: #007bff;
       color: white;
       border: none;
-      padding: 10px 0;
-      width: 100%;
-      font-size: 1rem;
-      border-radius: 4px;
+      border-radius: 5px;
       cursor: pointer;
-      margin-top: 1rem;
-      transition: background-color 0.3s ease;
+      margin-top: 0.5rem;
     }
     button:hover {
       background-color: #0056b3;
     }
-    button.reset {
-      background-color: #6c757d;
-      margin-top: 0.5rem;
-    }
-    button.reset:hover {
-      background-color: #5a6268;
-    }
-    .result, #healthTips {
+    .result, .advice, .table-wrapper {
       margin-top: 1rem;
-      font-weight: bold;
-      font-size: 1.1rem;
-      color: #333;
-      opacity: 0;
-      transition: opacity 0.5s ease-in-out;
-      min-height: 40px;
+      text-align: center;
     }
-    .result.visible, #healthTips.visible {
-      opacity: 1;
+    .bmi-bar {
+      margin-top: 1rem;
+      display: flex;
+      height: 20px;
+      border-radius: 5px;
+      overflow: hidden;
     }
-    /* Color code categories */
-    .underweight { color: #0275d8; } /* Blue */
-    .normal { color: #28a745; }      /* Green */
-    .overweight {
-      color: #856404;                /* Dark yellow-brown */
-      background-color: #fff3cd;    /* Light yellow background */
-      padding: 0.2em 0.5em;
-      border-radius: 4px;
-      display: inline-block;
+    .bar {
+      flex: 1;
     }
-    .obese { color: #dc3545; }       /* Red */
-
-    /* Responsive */
-    @media (max-width: 400px) {
-      .container {
-        width: 90vw;
-      }
+    .underweight { background: #85d7ff; }
+    .normal { background: #98fb98; }
+    .overweight { background: #ffd700; }
+    .obese { background: #ff7f7f; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    td, th {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
     }
   </style>
 </head>
 <body>
-  <div class="container" role="main" aria-label="BMI Calculator">
-    <h2>
-      BMI Calculator
-      <span class="info-icon" tabindex="0" aria-describedby="bmi-info" role="tooltip" aria-label="BMI Information">?
-        <span class="tooltip" id="bmi-info">
-          BMI categories: Underweight &lt; 18.5, Normal 18.5-24.9, Overweight 25-29.9, Obesity ≥ 30.
-        </span>
-      </span>
-    </h2>
+  <div class="container">
+    <h2>BMI Calculator</h2>
+    <label for="weight">Weight</label>
+    <input type="number" id="weight" placeholder="Enter weight">
+    <select id="weightUnit">
+      <option value="kg">kg</option>
+      <option value="lb">pounds</option>
+    </select>
 
-    <label for="weight">Weight (kg)</label>
-    <input type="number" id="weight" placeholder="Enter weight in kg" step="0.1" min="0" aria-describedby="weight-error" />
-    <div id="weight-error" class="error" aria-live="polite"></div>
+    <label for="height">Height</label>
+    <input type="number" id="height" placeholder="Enter height">
+    <select id="heightUnit">
+      <option value="m">meters</option>
+      <option value="cm">centimeters</option>
+      <option value="in">inches</option>
+    </select>
 
-    <label for="height">Height (m)</label>
-    <input type="number" id="height" placeholder="Enter height in meters" step="0.01" min="0" aria-describedby="height-error" />
-    <div id="height-error" class="error" aria-live="polite"></div>
+    <button onclick="calculateBMI()">Calculate BMI</button>
 
-    <button id="calcBtn" type="button">Calculate BMI</button>
-    <button id="resetBtn" type="button" class="reset">Reset</button>
-
-    <div id="result" class="result" aria-live="polite" role="region"></div>
-    <div id="healthTips" aria-live="polite" role="region"></div>
+    <div class="result" id="result"></div>
+    <div class="bmi-bar">
+      <div class="bar underweight"></div>
+      <div class="bar normal"></div>
+      <div class="bar overweight"></div>
+      <div class="bar obese"></div>
+    </div>
+    <div class="advice" id="advice"></div>
+    <div class="table-wrapper" id="idealWeightTable"></div>
   </div>
 
   <script>
-    const weightInput = document.getElementById('weight');
-    const heightInput = document.getElementById('height');
-    const resultDiv = document.getElementById('result');
-    const tipsDiv = document.getElementById('healthTips');
-    const weightError = document.getElementById('weight-error');
-    const heightError = document.getElementById('height-error');
-    const calcBtn = document.getElementById('calcBtn');
-    const resetBtn = document.getElementById('resetBtn');
-
-    function getBMICategoryKey(bmi) {
-      if (bmi < 18.5) return "underweight";
-      else if (bmi < 24.9) return "normal";
-      else if (bmi < 29.9) return "overweight";
-      else return "obese";
+    function convertToMeters(value, unit) {
+      if (unit === 'cm') return value / 100;
+      if (unit === 'in') return value * 0.0254;
+      return value;
     }
 
-    function clearErrors() {
-      weightError.textContent = '';
-      heightError.textContent = '';
-      weightInput.classList.remove('input-error');
-      heightInput.classList.remove('input-error');
-    }
-
-    function validateInputs() {
-      clearErrors();
-      let valid = true;
-
-      if (!weightInput.value || parseFloat(weightInput.value) <= 0) {
-        weightError.textContent = 'Please enter a valid positive weight.';
-        valid = false;
-      }
-      if (!heightInput.value || parseFloat(heightInput.value) <= 0) {
-        heightError.textContent = 'Please enter a valid positive height.';
-        valid = false;
-      }
-      return valid;
-    }
-
-    function showHealthTips(bmi) {
-      // Static tips object to avoid extra files, for demonstration
-      const tips = {
-        underweight: "You may need to gain weight. Consider a balanced diet rich in nutrients.",
-        normal: "Great! Keep maintaining your healthy lifestyle.",
-        overweight: "Try to increase physical activity and watch your diet.",
-        obese: "It is advised to consult a healthcare provider for guidance."
-      };
-      const categoryKey = getBMICategoryKey(bmi);
-      tipsDiv.textContent = tips[categoryKey] || '';
-      tipsDiv.classList.add('visible');
+    function convertToKg(value, unit) {
+      if (unit === 'lb') return value * 0.453592;
+      return value;
     }
 
     function calculateBMI() {
-      if (!validateInputs()) {
-        resultDiv.textContent = '';
-        resultDiv.classList.remove('visible');
-        tipsDiv.textContent = '';
-        tipsDiv.classList.remove('visible');
+      const weight = parseFloat(document.getElementById('weight').value);
+      const height = parseFloat(document.getElementById('height').value);
+      const weightUnit = document.getElementById('weightUnit').value;
+      const heightUnit = document.getElementById('heightUnit').value;
+      const resultDiv = document.getElementById('result');
+      const adviceDiv = document.getElementById('advice');
+      const tableDiv = document.getElementById('idealWeightTable');
+
+      if (!weight || !height || weight <= 0 || height <= 0) {
+        resultDiv.textContent = 'Please enter valid values';
         return;
       }
 
-      const weight = parseFloat(weightInput.value);
-      const height = parseFloat(heightInput.value);
-      const bmi = weight / (height * height);
-      let category = '';
+      const heightM = convertToMeters(height, heightUnit);
+      const weightKg = convertToKg(weight, weightUnit);
+      const bmi = weightKg / (heightM * heightM);
 
-      if (bmi < 18.5) category = 'Underweight';
-      else if (bmi < 24.9) category = 'Normal weight';
-      else if (bmi < 29.9) category = 'Overweight';
-      else category = 'Obesity';
+      let category = '', color = '', advice = '';
+      if (bmi < 18.5) {
+        category = 'Underweight'; advice = 'Consider a nutritious diet to gain weight.';
+      } else if (bmi < 24.9) {
+        category = 'Normal weight'; advice = 'Great! Maintain your healthy lifestyle.';
+      } else if (bmi < 29.9) {
+        category = 'Overweight'; advice = 'Increase physical activity and watch your diet.';
+      } else {
+        category = 'Obesity'; advice = 'Consult a healthcare provider for guidance.';
+      }
 
       resultDiv.textContent = `Your BMI is ${bmi.toFixed(2)} (${category})`;
-      resultDiv.className = `result visible ${getBMICategoryKey(bmi)}`;
+      adviceDiv.textContent = advice;
 
-      showHealthTips(bmi);
+      const minNormal = 18.5 * heightM * heightM;
+      const maxNormal = 24.9 * heightM * heightM;
+      let suggestion = '';
+      if (bmi < 18.5) suggestion = `Gain at least ${(minNormal - weightKg).toFixed(1)} kg to reach a normal BMI.`;
+      else if (bmi > 24.9) suggestion = `Lose at least ${(weightKg - maxNormal).toFixed(1)} kg to reach a normal BMI.`;
+
+      adviceDiv.textContent += `\n${suggestion}`;
+
+      tableDiv.innerHTML = `
+        <table>
+          <tr><th>Category</th><th>Weight Range (kg)</th></tr>
+          <tr><td>Underweight</td><td>< ${minNormal.toFixed(1)}</td></tr>
+          <tr><td>Normal</td><td>${minNormal.toFixed(1)} - ${maxNormal.toFixed(1)}</td></tr>
+          <tr><td>Overweight</td><td>${maxNormal.toFixed(1)} - ${(29.9 * heightM * heightM).toFixed(1)}</td></tr>
+          <tr><td>Obese</td><td>> ${(29.9 * heightM * heightM).toFixed(1)}</td></tr>
+        </table>
+      `;
     }
-
-    function resetForm() {
-      weightInput.value = '';
-      heightInput.value = '';
-      clearErrors();
-      resultDiv.textContent = '';
-      tipsDiv.textContent = '';
-      resultDiv.classList.remove('visible', 'underweight', 'normal', 'overweight', 'obese');
-      tipsDiv.classList.remove('visible');
-      weightInput.focus();
-    }
-
-    calcBtn.addEventListener('click', calculateBMI);
-    resetBtn.addEventListener('click', resetForm);
-
-    weightInput.addEventListener('input', () => {
-      if (parseFloat(weightInput.value) > 0) weightError.textContent = '';
-    });
-    heightInput.addEventListener('input', () => {
-      if (parseFloat(heightInput.value) > 0) heightError.textContent = '';
-    });
   </script>
 </body>
 </html>
-
