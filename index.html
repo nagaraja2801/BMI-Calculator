@@ -1,483 +1,391 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>BMI Calculator with Admin Panel</title>
-  <link rel="icon" href="favicon.ico" type="image/x-icon" />
-  <link rel="icon" type="image/png" sizes="32x32" href="favicon.png" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f0f4f8;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      min-height: 100vh;
-      margin: 0;
-      padding: 2rem;
-    }
-    .container {
-      background: white;
-      padding: 2rem;
-      border-radius: 8px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.1);
-      width: 400px;
-      max-width: 100%;
-      text-align: center;
-    }
-    h2, h3 {
-      margin-bottom: 1rem;
-    }
-    label {
-      display: block;
-      text-align: left;
-      font-weight: 600;
-      margin-bottom: 0.25rem;
-      margin-top: 0.5rem;
-    }
-    input, select {
-      width: 100%;
-      padding: 8px;
-      margin-bottom: 0.25rem;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      font-size: 1rem;
-      box-sizing: border-box;
-    }
-    button {
-      background-color: #007BFF;
-      color: white;
-      border: none;
-      padding: 10px 0;
-      width: 100%;
-      font-size: 1rem;
-      border-radius: 4px;
-      cursor: pointer;
-      margin-top: 1rem;
-      transition: background-color 0.3s ease;
-    }
-    button:hover {
-      background-color: #0056b3;
-    }
-    .result, #calorieResults {
-      margin-top: 1rem;
-      font-size: 1rem;
-    }
-    #bmiChartContainer {
-      margin-top: 1rem;
-      position: relative;
-      height: 40px;
-      width: 100%;
-      border-radius: 20px;
-      background: #ddd;
-      overflow: hidden;
-    }
-    #bmiBar {
-      height: 100%;
-      width: 0;
-      border-radius: 20px;
-      background-color: green;
-      transition: width 1.5s ease, background-color 1.5s ease;
-    }
-    #bmiExplanation {
-      margin-top: 0.75rem;
-      font-size: 0.9rem;
-      color: #333;
-      text-align: left;
-      min-height: 60px;
-    }
-    #historySection ul {
-      text-align: left;
-      max-height: 150px;
-      overflow-y: auto;
-      padding-left: 1rem;
-    }
-    /* Admin styles */
-    #adminPanel, #adminDashboard {
-      margin-top: 2rem;
-      background: #fff;
-      border: 2px solid #333;
-      padding: 15px;
-      border-radius: 8px;
-      max-width: 600px;
-    }
-    #usersData {
-      margin-top: 10px;
-      overflow-x: auto;
-      max-height: 400px;
-      border: 1px solid #ccc;
-      padding: 10px;
-      font-size: 0.9rem;
-      text-align: left;
-    }
-    #usersData div {
-      border-bottom: 1px solid #ccc;
-      padding: 10px 0;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>BMI Calculator with Admin Panel</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f0f4f8;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    margin: 0;
+    padding: 2rem;
+  }
+  .container {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    width: 400px;
+    max-width: 100%;
+    text-align: center;
+  }
+  h2 {
+    margin-bottom: 1rem;
+  }
+  label {
+    display: block;
+    text-align: left;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    margin-top: 0.5rem;
+  }
+  input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 0.25rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+    box-sizing: border-box;
+  }
+  button {
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    padding: 10px 0;
+    width: 100%;
+    font-size: 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: background-color 0.3s ease;
+  }
+  button:hover {
+    background-color: #0056b3;
+  }
+  #bmiResult, #weightRangeAdvice, #adviceQuote {
+    margin-top: 1rem;
+    font-weight: 600;
+    color: #222;
+  }
+  #adviceQuote {
+    font-style: italic;
+    color: #555;
+    font-weight: 400;
+  }
+  #bmiChartContainer {
+    margin-top: 1rem;
+    position: relative;
+    height: 30px;
+    width: 100%;
+    border-radius: 20px;
+    background: #ddd;
+    overflow: hidden;
+  }
+  #bmiBar {
+    height: 100%;
+    width: 0;
+    border-radius: 20px;
+    background-color: green;
+    transition: width 1.5s ease, background-color 1.5s ease;
+  }
+  #authSection, #adminPanel {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+  }
+  #adminDashboard {
+    max-width: 600px;
+    margin-top: 2rem;
+    background: #fff;
+    border: 2px solid #333;
+    padding: 15px;
+    border-radius: 8px;
+    text-align: left;
+    display: none;
+  }
+  #usersData {
+    margin-top: 10px;
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    padding: 10px;
+    font-size: 0.9rem;
+  }
+  #usersData div {
+    border-bottom: 1px solid #ccc;
+    padding: 10px 0;
+  }
+  .error {
+    color: red;
+    margin-top: 0.5rem;
+    font-weight: 600;
+  }
+  .success {
+    color: green;
+    margin-top: 0.5rem;
+    font-weight: 600;
+  }
+</style>
 </head>
 <body>
   <div class="container">
-    <h2>BMI Calculator</h2>
+    <h2>BMI Calculator with User Login</h2>
 
     <div id="authSection">
-      <h3>👤 User Login / Register (Optional)</h3>
+      <h3>👤 User Login / Register (optional)</h3>
       <label for="username">Username</label>
       <input type="text" id="username" placeholder="Enter username" />
       <label for="password">Password</label>
       <input type="password" id="password" placeholder="Enter password" />
-      <button onclick="login()">Login / Register</button>
-      <div id="authMessage" style="margin-top: 10px; min-height: 20px;"></div>
+      <button onclick="loginUser()">Login / Register</button>
+      <div id="authMessage"></div>
     </div>
 
-    <div id="calorieMacroSection" style="margin-top:2rem; text-align:left;">
-      <h3>🎯 Calorie & Macro Calculator</h3>
-      <label for="age">Age</label>
-      <input type="number" id="age" placeholder="Enter your age" />
-      <label for="gender">Gender</label>
-      <select id="gender">
-        <option value="" disabled selected>Select gender</option>
-        <option value="male">Male</option>
-        <option value="female">Female</option>
-      </select>
-      <label for="activity">Activity Level</label>
-      <select id="activity">
-        <option value="" disabled selected>Select activity level</option>
-        <option value="1.2">Sedentary (little or no exercise)</option>
-        <option value="1.375">Lightly active (1-3 days/week)</option>
-        <option value="1.55">Moderately active (3-5 days/week)</option>
-        <option value="1.725">Very active (6-7 days/week)</option>
-        <option value="1.9">Extra active (hard training)</option>
-      </select>
-      <label for="cmHeight">Height</label>
-      <div style="display: flex; gap: 8px;">
-        <input type="number" id="cmHeight" placeholder="Height" />
-        <select id="heightUnit" onchange="convertHeight()">
-          <option value="cm">cm</option>
-          <option value="in">inches</option>
-        </select>
-      </div>
-      <label for="kgWeight">Weight</label>
-      <div style="display: flex; gap: 8px;">
-        <input type="number" id="kgWeight" placeholder="Weight" />
-        <select id="weightUnit" onchange="convertWeight()">
-          <option value="kg">kg</option>
-          <option value="lb">lbs</option>
-        </select>
-      </div>
-      <label for="wrist">Wrist Circumference (optional, cm)</label>
-      <input type="number" id="wrist" placeholder="Optional - for body fat %" />
-      <button onclick="calculateCalories()">Calculate Daily Calories & BMI</button>
-      <div id="calorieResults"></div>
+    <label for="height">Height (cm):</label>
+    <input type="number" id="height" placeholder="Enter your height in cm" min="50" max="300" />
+    
+    <label for="weight">Weight (kg):</label>
+    <input type="number" id="weight" placeholder="Enter your weight in kg" min="10" max="500" />
+    
+    <button onclick="calculateBMI()">Calculate BMI</button>
 
-      <div id="bmiChartContainer" aria-label="BMI Visualization">
-        <div id="bmiBar"></div>
-      </div>
-      <div id="bmiExplanation" aria-live="polite"></div>
+    <div id="bmiResult"></div>
+    <div id="weightRangeAdvice"></div>
+    <div id="adviceQuote"></div>
+
+    <div id="bmiChartContainer" aria-label="BMI Visualization">
+      <div id="bmiBar"></div>
     </div>
 
-    <div id="historySection" style="margin-top:2rem;"></div>
+    <hr style="margin-top: 2rem; margin-bottom: 1rem;" />
 
     <!-- Admin Login Section -->
     <div id="adminPanel">
       <h3>🔒 Admin Login</h3>
-      <label for="adminUsername">Username</label>
+      <label for="adminUsername">Admin Username</label>
       <input type="text" id="adminUsername" />
-      <label for="adminPassword">Password</label>
+      <label for="adminPassword">Admin Password</label>
       <input type="password" id="adminPassword" />
       <button onclick="adminLogin()">Login as Admin</button>
-      <p id="adminMessage" style="color:red; min-height: 20px;"></p>
+      <p id="adminMessage" class="error"></p>
     </div>
 
-    <div id="adminDashboard" style="display:none;">
-      <h3>Admin Dashboard - User Data</h3>
+    <div id="adminDashboard">
+      <h3>Admin Dashboard - User Submissions</h3>
       <button onclick="adminLogout()">Logout Admin</button>
       <div id="usersData"></div>
     </div>
   </div>
 
 <script>
-  let loggedInUser = null;
+  // Admin credentials (hardcoded for demo)
+  const ADMIN_USER = "admin";
+  const ADMIN_PASS = "admin123";
 
-  // User login/register
-  function login() {
+  let loggedInUser = null;
+  let adminLoggedIn = false;
+
+  function loginUser() {
     const user = document.getElementById('username').value.trim();
     const pass = document.getElementById('password').value.trim();
     const authMsg = document.getElementById('authMessage');
+    authMsg.textContent = "";
+    authMsg.className = "";
 
     if (!user || !pass) {
-      authMsg.style.color = 'red';
-      authMsg.innerText = "Username and password are required.";
+      authMsg.textContent = "Username and password are required.";
+      authMsg.className = "error";
       return;
     }
-    const stored = JSON.parse(localStorage.getItem(`user_${user}`));
-    if (stored && stored.password !== btoa(pass)) {
-      authMsg.style.color = 'red';
-      authMsg.innerText = "Incorrect password.";
-      return;
-    }
-    if (!stored) {
+    const stored = localStorage.getItem(`user_${user}`);
+    if (stored) {
+      // User exists, verify password
+      const userData = JSON.parse(stored);
+      if (userData.password !== btoa(pass)) {
+        authMsg.textContent = "Incorrect password.";
+        authMsg.className = "error";
+        return;
+      }
+      loggedInUser = user;
+      authMsg.textContent = `Welcome back, ${user}!`;
+      authMsg.className = "success";
+      loadUserLastData(userData);
+    } else {
+      // Register new user
       const newUser = {
         password: btoa(pass),
-        history: [],
-        username: user,
-        registeredAt: new Date().toISOString()
+        submissions: []
       };
       localStorage.setItem(`user_${user}`, JSON.stringify(newUser));
-      authMsg.style.color = 'green';
-      authMsg.innerText = "Account created and logged in.";
-    } else {
-      authMsg.style.color = 'green';
-      authMsg.innerText = "Logged in successfully.";
+      loggedInUser = user;
+      authMsg.textContent = `User ${user} registered and logged in.`;
+      authMsg.className = "success";
     }
-    loggedInUser = user;
-    showHistory();
   }
 
-  // Save BMI & calorie data for logged in user
-  function saveUserData(result) {
-    if (!loggedInUser) return;
-    const key = `user_${loggedInUser}`;
-    const data = JSON.parse(localStorage.getItem(key));
-    const timestamp = new Date().toISOString();
-    data.history.push({ timestamp, ...result });
-    localStorage.setItem(key, JSON.stringify(data));
+  function loadUserLastData(userData) {
+    // If user has previous submissions, fill the latest height & weight inputs
+    if (userData.submissions.length > 0) {
+      const last = userData.submissions[userData.submissions.length - 1];
+      document.getElementById('height').value = last.height;
+      document.getElementById('weight').value = last.weight;
+      // Optionally show last BMI & advice
+      displayBMIResults(last.bmi, last.height, last.weight);
+    }
   }
 
-  // Show user's BMI history
-  function showHistory() {
-    const container = document.getElementById('historySection');
-    if (!loggedInUser) {
-      container.innerHTML = "";
+  function calculateBMI() {
+    const heightCm = parseFloat(document.getElementById('height').value);
+    const weightKg = parseFloat(document.getElementById('weight').value);
+    const bmiResultDiv = document.getElementById('bmiResult');
+    const weightRangeDiv = document.getElementById('weightRangeAdvice');
+    const adviceDiv = document.getElementById('adviceQuote');
+    const bmiBar = document.getElementById('bmiBar');
+
+    // Clear previous results
+    bmiResultDiv.textContent = "";
+    weightRangeDiv.textContent = "";
+    adviceDiv.textContent = "";
+    bmiBar.style.width = "0";
+    bmiBar.style.backgroundColor = "green";
+
+    if (!heightCm || !weightKg || heightCm <= 0 || weightKg <= 0) {
+      bmiResultDiv.textContent = "Please enter valid positive numbers for height and weight.";
       return;
     }
-    const data = JSON.parse(localStorage.getItem(`user_${loggedInUser}`));
-    if (!data || !data.history.length) {
-      container.innerHTML = "";
-      return;
-    }
-    const html = data.history.map(h =>
-      `<li><strong>${new Date(h.timestamp).toLocaleString()}</strong>: BMI = ${h.bmi || "N/A"}, Calories = ${h.maintenance || "N/A"} kcal</li>`
-    ).join('');
-    container.innerHTML = `<h3>Your History</h3><ul>${html}</ul>`;
-  }
 
-  // Height unit conversion
-  function convertHeight() {
-    const input = document.getElementById('cmHeight');
-    const unit = document.getElementById('heightUnit').value;
-    let value = parseFloat(input.value);
-    if (isNaN(value)) return;
-    if (unit === 'in') {
-      // Convert cm to inches if user switches to inches unit
-      input.value = (value / 2.54).toFixed(2);
-    } else {
-      // Convert inches to cm if user switches to cm unit
-      input.value = (value * 2.54).toFixed(2);
-    }
-  }
-  // Weight unit conversion
-  function convertWeight() {
-    const input = document.getElementById('kgWeight');
-    const unit = document.getElementById('weightUnit').value;
-    let value = parseFloat(input.value);
-    if (isNaN(value)) return;
-    if (unit === 'lb') {
-      // Convert kg to lb if user switches to lb
-      input.value = (value * 2.20462).toFixed(2);
-    } else {
-      // Convert lb to kg if user switches to kg
-      input.value = (value / 2.20462).toFixed(2);
-    }
-  }
-
-  // Calculate BMI, Calories, Macros
-  function calculateCalories() {
-    const age = parseInt(document.getElementById('age').value);
-    const gender = document.getElementById('gender').value;
-    const activity = parseFloat(document.getElementById('activity').value);
-    const heightRaw = parseFloat(document.getElementById('cmHeight').value);
-    const weightRaw = parseFloat(document.getElementById('kgWeight').value);
-    const heightUnit = document.getElementById('heightUnit').value;
-    const weightUnit = document.getElementById('weightUnit').value;
-    const wrist = parseFloat(document.getElementById('wrist').value);
-
-    if (!age || !gender || !activity || !heightRaw || !weightRaw) {
-      alert("Please fill all required fields.");
-      return;
-    }
-    // Convert height and weight to metric if needed
-    let heightCm = heightUnit === 'cm' ? heightRaw : heightRaw * 2.54;
-    let weightKg = weightUnit === 'kg' ? weightRaw : weightRaw / 2.20462;
-
-    // BMI formula
     const heightM = heightCm / 100;
     const bmi = weightKg / (heightM * heightM);
-    const bmiRounded = bmi.toFixed(2);
+    const bmiRounded = bmi.toFixed(1);
 
-    // BMR formula (Mifflin-St Jeor)
-    let bmr;
-    if (gender === 'male') {
-      bmr = 10 * weightKg + 6.25 * heightCm - 5 * age + 5;
-    } else {
-      bmr = 10 * weightKg + 6.25 * heightCm - 5 * age - 161;
-    }
-    const maintenanceCalories = Math.round(bmr * activity);
+    displayBMIResults(bmiRounded, heightCm, weightKg);
 
-    // Macros (protein 20%, fat 25%, carbs rest)
-    const proteinGrams = Math.round((maintenanceCalories * 0.20) / 4);
-    const fatGrams = Math.round((maintenanceCalories * 0.25) / 9);
-    const carbGrams = Math.round((maintenanceCalories - (proteinGrams * 4 + fatGrams * 9)) / 4);
+    // Save user data if logged in
+    if (loggedInUser) {
+      const userDataRaw = localStorage.getItem(`user_${loggedInUser}`);
+      if (userDataRaw) {
+        const userData = JSON.parse(userDataRaw);
 
-    // Body fat estimation (optional, very rough using wrist)
-    let bodyFatPercent = "N/A";
-    if (!isNaN(wrist) && wrist > 0) {
-      // Just a rough estimate based on wrist (not accurate)
-      if (gender === "male") {
-        bodyFatPercent = (weightKg * 1.082 + 94.42) - (wrist * 4.15);
-      } else {
-        bodyFatPercent = (weightKg * 0.732 + 8.987) + (wrist / 3.14);
+        const submission = {
+          timestamp: new Date().toISOString(),
+          height: heightCm,
+          weight: weightKg,
+          bmi: bmiRounded
+        };
+
+        userData.submissions.push(submission);
+        localStorage.setItem(`user_${loggedInUser}`, JSON.stringify(userData));
       }
-      bodyFatPercent = bodyFatPercent.toFixed(2) + "% (rough est.)";
     }
-
-    // Show results
-    const calorieResults = document.getElementById('calorieResults');
-    calorieResults.innerHTML = `
-      <p><strong>BMI:</strong> ${bmiRounded}</p>
-      <p><strong>Maintenance Calories:</strong> ${maintenanceCalories} kcal/day</p>
-      <p><strong>Macros:</strong> Protein: ${proteinGrams}g, Fat: ${fatGrams}g, Carbs: ${carbGrams}g</p>
-      <p><strong>Body Fat Estimate:</strong> ${bodyFatPercent}</p>
-    `;
-
-    updateBMIVisualization(bmi);
-
-    // Save to logged in user if any
-    saveUserData({
-      bmi: bmiRounded,
-      maintenance: maintenanceCalories,
-      protein: proteinGrams,
-      fat: fatGrams,
-      carbs: carbGrams,
-      bodyFat: bodyFatPercent
-    });
-
-    showHistory();
   }
 
-  // Update BMI bar and explanation with dynamic colors
-  function updateBMIVisualization(bmi) {
+  function displayBMIResults(bmiRounded, heightCm, weightKg) {
+    const bmiResultDiv = document.getElementById('bmiResult');
+    const weightRangeDiv = document.getElementById('weightRangeAdvice');
+    const adviceDiv = document.getElementById('adviceQuote');
     const bmiBar = document.getElementById('bmiBar');
-    const bmiExp = document.getElementById('bmiExplanation');
 
-    let widthPercent = 0;
-    let color = '#2ecc71'; // default green
-    let explanation = "";
+    bmiResultDiv.textContent = `Your BMI is: ${bmiRounded}`;
 
-    if (bmi < 16) {
-      widthPercent = 10;
-      color = '#8B0000'; // dark red
-      explanation = "Severe Thinness: BMI less than 16.";
-    } else if (bmi < 17) {
-      widthPercent = 20;
-      color = '#FF4500'; // orange red
-      explanation = "Moderate Thinness: BMI between 16 and 17.";
-    } else if (bmi < 18.5) {
-      widthPercent = 30;
-      color = '#FFA500'; // orange
-      explanation = "Mild Thinness: BMI between 17 and 18.5.";
-    } else if (bmi < 25) {
-      widthPercent = 50;
-      color = '#2ecc71'; // green
-      explanation = "Normal: BMI between 18.5 and 25.";
-    } else if (bmi < 30) {
-      widthPercent = 70;
-      color = '#FFD700'; // gold
-      explanation = "Overweight: BMI between 25 and 30.";
-    } else if (bmi < 35) {
-      widthPercent = 85;
-      color = '#FF8C00'; // dark orange
-      explanation = "Obese Class I: BMI between 30 and 35.";
-    } else if (bmi < 40) {
-      widthPercent = 95;
-      color = '#FF0000'; // red
-      explanation = "Obese Class II: BMI between 35 and 40.";
+    const heightM = heightCm / 100;
+    const minWeight = (18.5 * heightM * heightM).toFixed(1);
+    const maxWeight = (24.9 * heightM * heightM).toFixed(1);
+    weightRangeDiv.textContent = `Ideal weight range: ${minWeight} kg - ${maxWeight} kg`;
+
+    // Bar width percent (max 40 BMI)
+    const bmiNum = parseFloat(bmiRounded);
+    const bmiPercent = Math.min(bmiNum, 40) / 40 * 100;
+    bmiBar.style.width = bmiPercent + '%';
+
+    // Set bar color and advice by BMI category
+    let advice = "";
+    let barColor = "green";
+
+    if (bmiNum < 18.5) {
+      barColor = "#3498db"; // blue
+      advice = "Underweight: Focus on nutrient-rich foods to gain healthy weight. “Health is the greatest gift.”";
+    } else if (bmiNum < 25) {
+      barColor = "#2ecc71"; // green
+      advice = "Normal weight: Keep up the great work maintaining your health! “Wellness is a connection of paths: knowledge and action.”";
+    } else if (bmiNum < 30) {
+      barColor = "#f1c40f"; // yellow
+      advice = "Overweight: Incorporate more activity and balanced meals. “Small steps every day lead to big results.”";
     } else {
-      widthPercent = 100;
-      color = '#8B0000'; // dark red
-      explanation = "Obese Class III: BMI greater than 40.";
+      barColor = "#e74c3c"; // red
+      advice = "Obese: Consider consulting a healthcare professional for guidance. “Your health is worth every effort.”";
     }
 
-    bmiBar.style.width = widthPercent + '%';
-    bmiBar.style.backgroundColor = color;
-    bmiExp.innerText = explanation;
+    bmiBar.style.backgroundColor = barColor;
+    adviceDiv.textContent = advice;
   }
 
-  // Admin credentials
-  const ADMIN_USERNAME = "admin";
-  const ADMIN_PASSWORD = "admin123";
-
-  // Admin login
+  // Admin login/logout
   function adminLogin() {
-    const username = document.getElementById('adminUsername').value.trim();
-    const password = document.getElementById('adminPassword').value.trim();
+    const adminUser = document.getElementById('adminUsername').value.trim();
+    const adminPass = document.getElementById('adminPassword').value.trim();
     const adminMsg = document.getElementById('adminMessage');
 
-    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-      adminMsg.style.color = 'green';
-      adminMsg.innerText = "Admin logged in successfully!";
+    adminMsg.textContent = "";
+
+    if (adminUser === ADMIN_USER && adminPass === ADMIN_PASS) {
+      adminLoggedIn = true;
       document.getElementById('adminPanel').style.display = 'none';
       document.getElementById('adminDashboard').style.display = 'block';
-      displayUsersData();
+      loadAllUserData();
     } else {
-      adminMsg.style.color = 'red';
-      adminMsg.innerText = "Invalid admin credentials!";
+      adminMsg.textContent = "Invalid admin credentials.";
     }
   }
 
-  // Admin logout
   function adminLogout() {
+    adminLoggedIn = false;
     document.getElementById('adminDashboard').style.display = 'none';
     document.getElementById('adminPanel').style.display = 'block';
-    document.getElementById('adminMessage').innerText = '';
-    document.getElementById('adminUsername').value = '';
-    document.getElementById('adminPassword').value = '';
   }
 
-  // Display all users data for admin
-  function displayUsersData() {
+  // Load all users' data from localStorage
+  function loadAllUserData() {
     const usersDataDiv = document.getElementById('usersData');
-    usersDataDiv.innerHTML = '';
+    usersDataDiv.innerHTML = "";
 
-    let foundUsers = false;
+    // localStorage keys for users start with 'user_'
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      if (key.startsWith('user_')) {
-        foundUsers = true;
-        const userData = JSON.parse(localStorage.getItem(key));
+      if (key.startsWith("user_")) {
+        const user = key.slice(5);
+        const dataRaw = localStorage.getItem(key);
+        if (!dataRaw) continue;
 
-        let userBlock = `<div>
-          <strong>User:</strong> ${userData.username || key.replace('user_', '')}<br/>
-          <strong>Registered At:</strong> ${new Date(userData.registeredAt).toLocaleString() || 'N/A'}<br/>
-          <strong>BMI History:</strong>`;
-
-        if (userData.history && userData.history.length > 0) {
-          userBlock += `<ul>`;
-          userData.history.forEach(entry => {
-            userBlock += `<li>${new Date(entry.timestamp).toLocaleString()}: BMI = ${entry.bmi}, Maintenance Calories = ${entry.maintenance} kcal</li>`;
-          });
-          userBlock += `</ul>`;
-        } else {
-          userBlock += ` No BMI records.</div>`;
+        let userData;
+        try {
+          userData = JSON.parse(dataRaw);
+        } catch {
+          continue;
         }
-        userBlock += `</div>`;
-        usersDataDiv.innerHTML += userBlock;
+        if (!userData.submissions || userData.submissions.length === 0) continue;
+
+        // Display user info and submissions
+        const userDiv = document.createElement('div');
+        userDiv.innerHTML = `<strong>User: ${user}</strong> (${userData.submissions.length} submissions)`;
+
+        userData.submissions.forEach((sub, index) => {
+          const subDiv = document.createElement('div');
+          subDiv.style.marginLeft = "15px";
+          subDiv.style.borderTop = "1px dotted #aaa";
+          subDiv.style.paddingTop = "5px";
+          subDiv.innerHTML = `
+            <em>Submission #${index + 1}</em><br>
+            Time: ${new Date(sub.timestamp).toLocaleString()}<br>
+            Height: ${sub.height} cm<br>
+            Weight: ${sub.weight} kg<br>
+            BMI: ${sub.bmi}
+          `;
+          userDiv.appendChild(subDiv);
+        });
+        usersDataDiv.appendChild(userDiv);
       }
     }
-    if (!foundUsers) {
-      usersDataDiv.innerHTML = "<p>No user data found.</p>";
+
+    if (!usersDataDiv.hasChildNodes()) {
+      usersDataDiv.textContent = "No user submissions found.";
     }
   }
 </script>
