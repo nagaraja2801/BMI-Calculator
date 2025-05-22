@@ -51,6 +51,13 @@
       font-size: 1.1rem;
       color: #333;
     }
+    #healthTips {
+      margin-top: 0.5rem;
+      font-weight: normal;
+      font-size: 1rem;
+      color: #555;
+      min-height: 40px;
+    }
   </style>
 </head>
 <body>
@@ -60,16 +67,40 @@
     <input type="number" id="height" placeholder="Height (m)" step="0.01" min="0" />
     <button onclick="calculateBMI()">Calculate BMI</button>
     <div class="result" id="result"></div>
+    <div id="healthTips"></div>
   </div>
 
   <script>
+    function getBMICategoryKey(bmi) {
+      if (bmi < 18.5) return "underweight";
+      else if (bmi < 24.9) return "normal";
+      else if (bmi < 29.9) return "overweight";
+      else return "obese";
+    }
+
+    function showHealthTips(bmi) {
+      fetch('data/healthTips.json')
+        .then(response => response.json())
+        .then(tips => {
+          const categoryKey = getBMICategoryKey(bmi);
+          const tip = tips[categoryKey] || '';
+          document.getElementById('healthTips').textContent = tip;
+        })
+        .catch(err => {
+          console.error('Failed to load health tips:', err);
+          document.getElementById('healthTips').textContent = '';
+        });
+    }
+
     function calculateBMI() {
       const weight = parseFloat(document.getElementById('weight').value);
       const height = parseFloat(document.getElementById('height').value);
       const resultDiv = document.getElementById('result');
+      const tipsDiv = document.getElementById('healthTips');
 
       if (!weight || !height || weight <= 0 || height <= 0) {
         resultDiv.textContent = 'Please enter valid positive numbers for weight and height.';
+        tipsDiv.textContent = '';
         return;
       }
 
@@ -82,7 +113,11 @@
       else category = 'Obesity';
 
       resultDiv.textContent = `Your BMI is ${bmi.toFixed(2)} (${category})`;
+
+      // Show health tips based on BMI
+      showHealthTips(bmi);
     }
   </script>
 </body>
 </html>
+
