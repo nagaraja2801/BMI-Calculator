@@ -3,48 +3,39 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Enhanced BMI Calculator</title>
+  <title>BMI Calculator</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon.png" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
       background: #f0f4f8;
-      color: #222;
       display: flex;
       justify-content: center;
-      align-items: flex-start;
-      min-height: 100vh;
+      align-items: center;
+      height: 100vh;
       margin: 0;
       padding: 1rem;
-      transition: background 0.3s, color 0.3s;
-    }
-    body.dark {
-      background: #121212;
-      color: #eee;
     }
     .container {
       background: white;
       padding: 2rem;
       border-radius: 8px;
       box-shadow: 0 0 20px rgba(0,0,0,0.1);
-      width: 380px;
+      width: 360px;
       max-width: 100%;
       text-align: center;
-      position: relative;
     }
-    body.dark .container {
-      background: #1f1f1f;
-      box-shadow: 0 0 20px rgba(255,255,255,0.1);
-    }
-    h2 {
+    h2, h3 {
       margin-bottom: 1rem;
-      position: relative;
     }
     label {
       display: block;
       text-align: left;
       font-weight: 600;
-      margin: 0.5rem 0 0.2rem 0;
+      margin-bottom: 0.25rem;
+      margin-top: 0.5rem;
     }
     input, select {
       width: 100%;
@@ -55,16 +46,9 @@
       font-size: 1rem;
       box-sizing: border-box;
     }
-    body.dark input, body.dark select {
-      background: #2c2c2c;
-      border: 1px solid #555;
-      color: #eee;
-    }
-    .error {
-      color: #d93025;
-      font-size: 0.85rem;
-      height: 18px;
-      margin-bottom: 0.5rem;
+    .result, #calorieResults {
+      margin-top: 1rem;
+      font-size: 1rem;
     }
     button {
       background-color: #007BFF;
@@ -81,412 +65,165 @@
     button:hover {
       background-color: #0056b3;
     }
-    .result, #healthTips, #idealWeightTable, #weightAdvice, #calorieAdvice, #waistHeightRatio, #bodyFatResult {
-      margin-top: 1rem;
-      font-size: 1rem;
-      text-align: left;
-    }
-    .underweight { color: #0275d8; }
-    .normal { color: #28a745; }
-    .overweight {
-      color: #856404;
-      background-color: #fff3cd;
-      padding: 0.2em 0.5em;
-      border-radius: 4px;
-      display: inline-block;
-    }
-    .obese { color: #dc3545; }
-    table {
-      margin: 1rem auto;
-      border-collapse: collapse;
-      width: 100%;
-      max-width: 300px;
-    }
-    table, th, td {
-      border: 1px solid #ccc;
-    }
-    th, td {
-      padding: 6px;
-      text-align: center;
-    }
-    canvas {
-      margin-top: 1rem;
-      max-width: 100%;
-    }
-    #bmiChart {
-      height: 60px;
-    }
-    #darkModeToggle {
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      cursor: pointer;
-      font-size: 0.9rem;
-      background: none;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      padding: 4px 8px;
-    }
-    body.dark #darkModeToggle {
-      border: 1px solid #555;
-      color: #eee;
-    }
   </style>
 </head>
 <body>
-  <div class="container" role="main" aria-label="Enhanced BMI Calculator">
-    <button id="darkModeToggle" aria-pressed="false" aria-label="Toggle dark mode" onclick="toggleDarkMode()">🌙 Dark Mode</button>
-    <h2>Enhanced BMI Calculator</h2>
+  <div class="container">
+    <h2>BMI Calculator</h2>
 
-    <label for="weight">Weight</label>
-    <input type="number" id="weight" placeholder="kg" min="1" max="500" aria-describedby="weightHelp" required />
-    <small id="weightHelp">Enter your weight in kilograms.</small>
+    <div id="authSection">
+      <h3>👤 Login (Optional)</h3>
+      <label for="username">Username</label>
+      <input type="text" id="username" placeholder="Enter username" />
+      <label for="password">Password</label>
+      <input type="password" id="password" placeholder="Enter password" />
+      <button onclick="login()">Login / Register</button>
+      <div id="authMessage" style="margin-top: 10px;"></div>
+    </div>
 
-    <label for="height">Height</label>
-    <input type="number" id="height" placeholder="cm" min="50" max="250" aria-describedby="heightHelp" required />
-    <small id="heightHelp">Enter your height in centimeters.</small>
-
-    <label for="age">Age</label>
-    <input type="number" id="age" placeholder="years" min="10" max="120" required />
-
-    <label for="gender">Gender</label>
-    <select id="gender" required>
-      <option value="" disabled selected>Select your gender</option>
-      <option value="male">Male</option>
-      <option value="female">Female</option>
-    </select>
-
-    <label for="waist">Waist Circumference</label>
-    <input type="number" id="waist" placeholder="cm" min="30" max="200" required />
-
-    <label for="goal">Fitness Goal</label>
-    <select id="goal" required aria-describedby="goalHelp">
-      <option value="" disabled selected>Select your goal</option>
-      <option value="maintain">Maintain Weight</option>
-      <option value="lose">Lose Weight</option>
-      <option value="gain">Gain Weight</option>
-    </select>
-    <small id="goalHelp">Choose your fitness goal for personalized tips.</small>
-
-    <button id="calcBtn">Calculate</button>
-
-    <div class="result" id="result" aria-live="polite" aria-atomic="true"></div>
-    <div id="healthTips"></div>
-    <div id="idealWeightTable"></div>
-    <div id="weightAdvice"></div>
-    <div id="calorieAdvice"></div>
-    <div id="waistHeightRatio"></div>
-    <div id="bodyFatResult"></div>
-
-    <canvas id="bmiChart" aria-label="BMI visual scale" role="img" width="360" height="60"></canvas>
+    <div id="calorieMacroSection" style="margin-top:2rem; text-align:left;">
+      <h3>🎯 Calorie & Macro Calculator</h3>
+      <label for="age">Age</label>
+      <input type="number" id="age" placeholder="Enter your age">
+      <label for="gender">Gender</label>
+      <select id="gender">
+        <option value="" disabled selected>Select gender</option>
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+      </select>
+      <label for="activity">Activity Level</label>
+      <select id="activity">
+        <option value="" disabled selected>Select activity level</option>
+        <option value="1.2">Sedentary (little or no exercise)</option>
+        <option value="1.375">Lightly active (1-3 days/week)</option>
+        <option value="1.55">Moderately active (3-5 days/week)</option>
+        <option value="1.725">Very active (6-7 days/week)</option>
+        <option value="1.9">Extra active (hard training)</option>
+      </select>
+      <label for="cmHeight">Height</label>
+      <div style="display: flex; gap: 8px;">
+        <input type="number" id="cmHeight" placeholder="Height">
+        <select id="heightUnit" onchange="convertHeight()">
+          <option value="cm">cm</option>
+          <option value="in">in</option>
+        </select>
+      </div>
+      <label for="kgWeight">Weight</label>
+      <div style="display: flex; gap: 8px;">
+        <input type="number" id="kgWeight" placeholder="Weight">
+        <select id="weightUnit" onchange="convertWeight()">
+          <option value="kg">kg</option>
+          <option value="lb">lb</option>
+        </select>
+      </div>
+      <label for="wrist">Wrist Circumference (optional, cm)</label>
+      <input type="number" id="wrist" placeholder="Optional - for body fat %">
+      <button onclick="calculateCalories()">Calculate Daily Calories</button>
+      <div id="calorieResults"></div>
+    </div>
   </div>
 
   <script>
-    // Dark mode toggle
-    const darkModeToggle = document.getElementById('darkModeToggle');
-    function toggleDarkMode() {
-      document.body.classList.toggle('dark');
-      const isDark = document.body.classList.contains('dark');
-      darkModeToggle.setAttribute('aria-pressed', isDark);
-    }
+    let loggedInUser = null;
 
-    // BMI category and colors
-    const bmiCategories = [
-      { label: 'Underweight', max: 18.5, color: '#0275d8' },
-      { label: 'Normal', max: 24.9, color: '#28a745' },
-      { label: 'Overweight', max: 29.9, color: '#ffc107', textColor: '#000' },
-      { label: 'Obese', max: 100, color: '#dc3545' }
-    ];
-
-    // Get elements
-    const weightInput = document.getElementById('weight');
-    const heightInput = document.getElementById('height');
-    const ageInput = document.getElementById('age');
-    const genderInput = document.getElementById('gender');
-    const waistInput = document.getElementById('waist');
-    const goalInput = document.getElementById('goal');
-    const calcBtn = document.getElementById('calcBtn');
-
-    const resultDiv = document.getElementById('result');
-    const healthTipsDiv = document.getElementById('healthTips');
-    const idealWeightTableDiv = document.getElementById('idealWeightTable');
-    const weightAdviceDiv = document.getElementById('weightAdvice');
-    const calorieAdviceDiv = document.getElementById('calorieAdvice');
-    const waistHeightRatioDiv = document.getElementById('waistHeightRatio');
-    const bodyFatResultDiv = document.getElementById('bodyFatResult');
-    const bmiChart = document.getElementById('bmiChart');
-    const ctx = bmiChart.getContext('2d');
-
-    const chartWidth = bmiChart.width;
-    const chartHeight = bmiChart.height;
-    const scalePadding = 20;
-
-    function validateInputs() {
-      if (
-        !weightInput.value || weightInput.value <= 0 ||
-        !heightInput.value || heightInput.value <= 0 ||
-        !ageInput.value || ageInput.value < 10 ||
-        !waistInput.value || waistInput.value <= 0 ||
-        !genderInput.value ||
-        !goalInput.value
-      ) {
-        alert('Please fill in all fields with valid values.');
-        return false;
+    function login() {
+      const user = document.getElementById('username').value.trim();
+      const pass = document.getElementById('password').value.trim();
+      if (!user || !pass) {
+        document.getElementById('authMessage').innerText = "Username and password are required.";
+        return;
       }
-      return true;
-    }
-
-    // Calculate BMI
-    function calculateBMI(weight, heightCm) {
-      const heightM = heightCm / 100;
-      return weight / (heightM * heightM);
-    }
-
-    // Get BMI category
-    function getBMICategory(bmi) {
-      return bmiCategories.find(cat => bmi <= cat.max);
-    }
-
-    // Ideal weight range based on BMI 18.5 to 24.9
-    function idealWeightRange(heightCm) {
-      const heightM = heightCm / 100;
-      return {
-        min: 18.5 * heightM * heightM,
-        max: 24.9 * heightM * heightM
-      };
-    }
-
-    // Weight advice for reaching normal BMI
-    function weightAdvice(bmi, weight, heightCm) {
-      const range = idealWeightRange(heightCm);
-      if (bmi < 18.5) {
-        return `You need to gain at least ${(range.min - weight).toFixed(1)} kg to reach a normal BMI.`;
-      } else if (bmi > 24.9) {
-        return `You need to lose at least ${(weight - range.max).toFixed(1)} kg to reach a normal BMI.`;
+      const stored = JSON.parse(localStorage.getItem(`user_${user}`));
+      if (stored && stored.password !== btoa(pass)) {
+        document.getElementById('authMessage').innerText = "Incorrect password.";
+        return;
+      }
+      if (!stored) {
+        localStorage.setItem(`user_${user}`, JSON.stringify({ password: btoa(pass), history: [] }));
+        document.getElementById('authMessage').innerText = "Account created and logged in.";
       } else {
-        return 'Your weight is within the normal BMI range.';
+        document.getElementById('authMessage').innerText = "Logged in successfully.";
       }
+      loggedInUser = user;
+      showHistory();
     }
 
-    // Calculate Waist-to-Height ratio
-    function calculateWaistHeightRatio(waistCm, heightCm) {
-      return waistCm / heightCm;
+    function saveUserData(result) {
+      if (!loggedInUser) return;
+      const data = JSON.parse(localStorage.getItem(`user_${loggedInUser}`));
+      const date = new Date().toLocaleString();
+      data.history.push({ date, ...result });
+      localStorage.setItem(`user_${loggedInUser}`, JSON.stringify(data));
     }
 
-    // Body Fat % estimation (simple formula based on BMI, age, gender)
-    function estimateBodyFatPercent(bmi, age, gender) {
-      // Using Deurenberg formula:
-      // Body Fat % = 1.20 × BMI + 0.23 × age − 10.8 × sex − 5.4
-      // sex = 1 for male, 0 for female
-      const sex = gender === 'male' ? 1 : 0;
-      return (1.20 * bmi) + (0.23 * age) - (10.8 * sex) - 5.4;
+    function showHistory() {
+      const container = document.querySelector('.container');
+      const data = JSON.parse(localStorage.getItem(`user_${loggedInUser}`));
+      if (!data || !data.history.length) return;
+      const html = data.history.map(h =>
+        `<li><strong>${h.date}</strong>: ${h.maintenance} kcal (BMI: ${h.bmi || "N/A"})</li>`
+      ).join('');
+      const section = document.createElement('div');
+      section.innerHTML = `<h3>Your History</h3><ul style="text-align:left;">${html}</ul>`;
+      container.appendChild(section);
     }
 
-    // Calculate BMR (Basal Metabolic Rate) - Mifflin St Jeor Equation
-    function calculateBMR(weight, heightCm, age, gender) {
-      if (gender === 'male') {
-        return 10 * weight + 6.25 * heightCm - 5 * age + 5;
-      } else {
-        return 10 * weight + 6.25 * heightCm - 5 * age - 161;
-      }
+    function convertHeight() {
+      const input = document.getElementById('cmHeight');
+      const unit = document.getElementById('heightUnit').value;
+      let value = parseFloat(input.value);
+      if (isNaN(value)) return;
+      input.value = unit === 'in' ? (value / 2.54).toFixed(2) : (value * 2.54).toFixed(2);
     }
 
-    // Calculate daily calorie needs based on activity level (assumed moderate)
-    function calculateDailyCalories(bmr, goal) {
-      // Activity multiplier for moderate activity ~1.55
-      const activityMultiplier = 1.55;
-      let calories = bmr * activityMultiplier;
-      if (goal === 'lose') {
-        calories -= 500; // ~0.5 kg fat loss/week
-      } else if (goal === 'gain') {
-        calories += 500; // ~0.5 kg muscle gain/week
-      }
-      return Math.max(calories, 1200); // avoid too low
+    function convertWeight() {
+      const input = document.getElementById('kgWeight');
+      const unit = document.getElementById('weightUnit').value;
+      let value = parseFloat(input.value);
+      if (isNaN(value)) return;
+      input.value = unit === 'lb' ? (value / 0.453592).toFixed(2) : (value * 0.453592).toFixed(2);
     }
 
-    // Calculate macros based on calories and goal
-    function calculateMacros(calories, goal) {
-      // Macro distribution based on goal:
-      // Maintain: Protein 20%, Fat 25%, Carbs 55%
-      // Lose: Protein 30%, Fat 25%, Carbs 45%
-      // Gain: Protein 25%, Fat 25%, Carbs 50%
-      let proteinPercent, fatPercent, carbPercent;
-      switch (goal) {
-        case 'lose':
-          proteinPercent = 0.30;
-          fatPercent = 0.25;
-          carbPercent = 0.45;
-          break;
-        case 'gain':
-          proteinPercent = 0.25;
-          fatPercent = 0.25;
-          carbPercent = 0.50;
-          break;
-        default:
-          proteinPercent = 0.20;
-          fatPercent = 0.25;
-          carbPercent = 0.55;
-      }
-      const proteinCals = calories * proteinPercent;
-      const fatCals = calories * fatPercent;
-      const carbCals = calories * carbPercent;
-      return {
-        proteinGrams: proteinCals / 4,
-        fatGrams: fatCals / 9,
-        carbGrams: carbCals / 4
-      };
-    }
+    function calculateCalories() {
+      const age = parseInt(document.getElementById('age').value);
+      const gender = document.getElementById('gender').value;
+      const activity = parseFloat(document.getElementById('activity').value);
+      let height = parseFloat(document.getElementById('cmHeight').value);
+      if (document.getElementById('heightUnit').value === 'in') height *= 2.54;
+      let weight = parseFloat(document.getElementById('kgWeight').value);
+      if (document.getElementById('weightUnit').value === 'lb') weight *= 0.453592;
 
-    // Personalized fitness tips based on BMI & goal
-    function fitnessTips(bmi, goal) {
-      if (goal === 'lose') {
-        if (bmi >= 25) return 'Focus on a calorie deficit diet and regular cardio exercise.';
-        else return 'Maintain a balanced diet and regular physical activity.';
-      } else if (goal === 'gain') {
-        if (bmi < 18.5) return 'Increase calorie intake with nutrient-dense foods and strength training.';
-        else return 'Continue muscle building with progressive overload and adequate protein.';
-      } else {
-        return 'Maintain balanced nutrition and regular exercise for healthy weight.';
-      }
-    }
-
-    // Draw BMI scale with pointer
-    function drawBMIScale(bmi) {
-      ctx.clearRect(0, 0, chartWidth, chartHeight);
-
-      // Draw color bands for BMI categories
-      let startX = scalePadding;
-      const totalWidth = chartWidth - 2 * scalePadding;
-      const bmiMax = 40; // max BMI to show in scale
-      const scaleFactor = totalWidth / bmiMax;
-
-      bmiCategories.forEach(cat => {
-        const prevMax = cat.max - (cat.max - (cat.max - 5 || 0));
-        const width = (cat.max > bmiMax ? bmiMax : cat.max) * scaleFactor;
-        ctx.fillStyle = cat.color;
-        let w;
-        if (cat === bmiCategories[0]) {
-          w = 18.5 * scaleFactor;
-        } else if (cat === bmiCategories[1]) {
-          w = (24.9 - 18.5) * scaleFactor;
-        } else if (cat === bmiCategories[2]) {
-          w = (29.9 - 25) * scaleFactor;
-        } else {
-          w = (bmiMax - 30) * scaleFactor;
-        }
-        ctx.fillRect(startX, 10, w, 30);
-        startX += w;
-      });
-
-      // Draw scale lines and labels every 5 BMI points
-      ctx.fillStyle = '#444';
-      ctx.font = '12px Arial';
-      ctx.textAlign = 'center';
-      for (let i = 0; i <= bmiMax; i += 5) {
-        const x = scalePadding + i * scaleFactor;
-        ctx.fillRect(x, 40, 1, 10);
-        ctx.fillText(i, x, 60);
+      if (!age || !gender || !activity || !height || !weight) {
+        document.getElementById('calorieResults').innerHTML = "<span style='color: red;'>Please enter all required fields.</span>";
+        return;
       }
 
-      // Draw pointer for BMI
-      const pointerX = Math.min(scalePadding + bmi * scaleFactor, chartWidth - scalePadding);
-      ctx.beginPath();
-      ctx.moveTo(pointerX, 5);
-      ctx.lineTo(pointerX - 6, 10);
-      ctx.lineTo(pointerX + 6, 10);
-      ctx.closePath();
-      ctx.fillStyle = '#000';
-      ctx.fill();
-    }
+      const bmr = gender === 'male'
+        ? 10 * weight + 6.25 * height - 5 * age + 5
+        : 10 * weight + 6.25 * height - 5 * age - 161;
 
-    // Main calculation handler
-    calcBtn.addEventListener('click', () => {
-      if (!validateInputs()) return;
+      const tdee = bmr * activity;
+      const protein = weight * 2;
+      const fats = weight * 0.9;
+      const carbs = (tdee - (protein * 4 + fats * 9)) / 4;
 
-      const weight = parseFloat(weightInput.value);
-      const height = parseFloat(heightInput.value);
-      const age = parseInt(ageInput.value);
-      const gender = genderInput.value;
-      const waist = parseFloat(waistInput.value);
-      const goal = goalInput.value;
+      const maintenance = tdee.toFixed(0);
+      const loss = (tdee - 500).toFixed(0);
+      const gain = (tdee + 500).toFixed(0);
 
-      const bmi = calculateBMI(weight, height);
-      const category = getBMICategory(bmi);
-
-      resultDiv.innerHTML = `
-        <strong>Your BMI:</strong> ${bmi.toFixed(1)} <br />
-        Category: <span style="color: ${category.color}; font-weight: 700;">${category.label}</span>
+      document.getElementById('calorieResults').innerHTML = `
+        <strong>Estimated Daily Needs:</strong><br>
+        Maintenance: <strong>${maintenance}</strong> kcal<br>
+        For Weight Loss: <strong>${loss}</strong> kcal<br>
+        For Weight Gain: <strong>${gain}</strong> kcal<br><br>
+        <strong>Macronutrient Breakdown:</strong><br>
+        Protein: <strong>${protein.toFixed(1)}</strong> g<br>
+        Fats: <strong>${fats.toFixed(1)}</strong> g<br>
+        Carbs: <strong>${carbs.toFixed(1)}</strong> g
       `;
 
-      // Health tips based on BMI category
-      let tipsText = '';
-      switch (category.label) {
-        case 'Underweight':
-          tipsText = 'You are underweight. Consider a balanced diet with increased calories and consult a healthcare provider if necessary.';
-          break;
-        case 'Normal':
-          tipsText = 'Your weight is normal. Maintain your healthy lifestyle!';
-          break;
-        case 'Overweight':
-          tipsText = 'You are overweight. Consider regular exercise and healthy eating to improve your weight.';
-          break;
-        case 'Obese':
-          tipsText = 'Obesity is a health risk. It is advisable to seek medical guidance for a weight loss plan.';
-          break;
-      }
-      healthTipsDiv.textContent = tipsText;
-
-      // Ideal weight table
-      const idealRange = idealWeightRange(height);
-      idealWeightTableDiv.innerHTML = `
-        <table aria-label="Ideal weight range table">
-          <thead>
-            <tr><th>Min Ideal Weight (kg)</th><th>Max Ideal Weight (kg)</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>${idealRange.min.toFixed(1)}</td>
-              <td>${idealRange.max.toFixed(1)}</td>
-            </tr>
-          </tbody>
-        </table>
-      `;
-
-      // Weight advice
-      weightAdviceDiv.textContent = weightAdvice(bmi, weight, height);
-
-      // Waist-to-Height ratio and advice
-      const whr = calculateWaistHeightRatio(waist, height);
-      let whrAdvice = '';
-      if ((gender === 'male' && whr > 0.53) || (gender === 'female' && whr > 0.49)) {
-        whrAdvice = 'Your waist-to-height ratio indicates increased risk of cardiovascular disease.';
-      } else {
-        whrAdvice = 'Your waist-to-height ratio is within a healthy range.';
-      }
-      waistHeightRatioDiv.innerHTML = `<strong>Waist-to-Height Ratio:</strong> ${whr.toFixed(2)} — ${whrAdvice}`;
-
-      // Body fat % estimation
-      const bodyFat = estimateBodyFatPercent(bmi, age, gender);
-      bodyFatResultDiv.innerHTML = `<strong>Estimated Body Fat Percentage:</strong> ${bodyFat.toFixed(1)}%`;
-
-      // Calorie and macros advice
-      const bmr = calculateBMR(weight, height, age, gender);
-      const calories = calculateDailyCalories(bmr, goal);
-      const macros = calculateMacros(calories, goal);
-
-      calorieAdviceDiv.innerHTML = `
-        <strong>Daily Calories Needed:</strong> ${calories.toFixed(0)} kcal<br />
-        <strong>Macros:</strong> Protein: ${macros.proteinGrams.toFixed(0)}g, Fat: ${macros.fatGrams.toFixed(0)}g, Carbs: ${macros.carbGrams.toFixed(0)}g
-      `;
-
-      // Fitness tips
-      const fitTips = fitnessTips(bmi, goal);
-      calorieAdviceDiv.innerHTML += `<p><em>Tip:</em> ${fitTips}</p>`;
-
-      // Draw BMI scale with pointer
-      drawBMIScale(bmi);
-    });
+      saveUserData({ maintenance, loss, gain, protein: protein.toFixed(1), fats: fats.toFixed(1), carbs: carbs.toFixed(1) });
+    }
   </script>
 </body>
 </html>
-
