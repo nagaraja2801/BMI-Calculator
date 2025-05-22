@@ -1,0 +1,6 @@
+{
+  "underweight": "You may need to eat more nutritious food and consult a healthcare provider.",
+  "normal": "Great job! Keep maintaining a healthy lifestyle.",
+  "overweight": "Try to increase physical activity and watch your diet.",
+  "obese": "Consider consulting a healthcare professional for advice."
+}
