@@ -7,251 +7,289 @@
   <link rel="icon" href="favicon.ico" type="image/x-icon" />
   <link rel="icon" type="image/png" sizes="32x32" href="favicon.png" />
   <style>
+    /* Basic reset and layout */
     body {
-      font-family: Arial, sans-serif;
-      background: #f0f4f8;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f7f9fc;
+      margin: 0;
+      padding: 1rem;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      margin: 0;
-      padding: 1rem;
+      min-height: 100vh;
     }
+
+    /* Container for the calculator */
     .container {
-      background: white;
-      padding: 2rem;
-      border-radius: 8px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.1);
-      width: 320px;
+      background-color: white;
+      padding: 2rem 2.5rem;
+      border-radius: 10px;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+      max-width: 350px;
+      width: 100%;
+      box-sizing: border-box;
       text-align: center;
     }
-    h2 {
-      margin-bottom: 1rem;
+
+    /* Heading with info tooltip */
+    h1 {
+      margin-bottom: 1.5rem;
+      font-weight: 700;
+      font-size: 1.8rem;
+      color: #222;
       position: relative;
     }
+
+    /* Tooltip styles */
     .info-icon {
-      display: inline-block;
-      margin-left: 6px;
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: #007bff;
+      margin-left: 8px;
       cursor: pointer;
-      border-bottom: 1px dotted #007BFF;
-      color: #007BFF;
-      font-weight: bold;
+      border-bottom: 1px dotted #007bff;
+      position: relative;
+      display: inline-block;
     }
     .tooltip {
       visibility: hidden;
-      width: 250px;
-      background-color: #333;
+      width: 240px;
+      background-color: #222;
       color: #fff;
       text-align: left;
       border-radius: 6px;
       padding: 10px;
       position: absolute;
-      z-index: 1;
-      bottom: 125%; /* Show above */
+      bottom: 125%;
       left: 50%;
-      margin-left: -125px;
+      transform: translateX(-50%);
       opacity: 0;
-      transition: opacity 0.3s;
-      font-size: 0.85rem;
-      line-height: 1.2;
+      transition: opacity 0.3s ease;
+      font-size: 0.9rem;
+      line-height: 1.3;
+      z-index: 10;
+      pointer-events: none;
     }
-    .info-icon:hover .tooltip {
+    .info-icon:hover .tooltip,
+    .info-icon:focus .tooltip {
       visibility: visible;
       opacity: 1;
+      pointer-events: auto;
     }
+
+    /* Labels and inputs */
     label {
       display: block;
       text-align: left;
       font-weight: 600;
-      margin-bottom: 0.25rem;
-      margin-top: 0.5rem;
+      margin: 0.5rem 0 0.2rem 0;
+      color: #444;
+      user-select: none;
     }
+
     input[type="number"] {
       width: 100%;
-      padding: 8px;
-      margin-bottom: 0.25rem;
-      border: 1px solid #ccc;
-      border-radius: 4px;
+      padding: 10px 12px;
       font-size: 1rem;
+      border: 1.8px solid #ccc;
+      border-radius: 5px;
+      transition: border-color 0.3s ease;
       box-sizing: border-box;
     }
-    .error {
-      color: #d93025;
+    input[type="number"]:focus {
+      border-color: #007bff;
+      outline: none;
+    }
+    input.error {
+      border-color: #dc3545;
+    }
+
+    /* Error messages below inputs */
+    .error-message {
+      color: #dc3545;
       font-size: 0.85rem;
-      height: 18px;
-      margin-bottom: 0.5rem;
+      margin-top: 0.15rem;
+      min-height: 18px;
     }
+
+    /* Buttons */
     button {
-      background-color: #007BFF;
-      color: white;
-      border: none;
-      padding: 10px 0;
+      margin-top: 1.5rem;
       width: 100%;
-      font-size: 1rem;
-      border-radius: 4px;
+      background-color: #007bff;
+      color: white;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 6px;
+      padding: 12px 0;
       cursor: pointer;
-      margin-top: 1rem;
       transition: background-color 0.3s ease;
+      user-select: none;
     }
-    button:hover {
+    button:hover,
+    button:focus {
       background-color: #0056b3;
+      outline: none;
     }
     button.reset {
       background-color: #6c757d;
-      margin-top: 0.5rem;
+      margin-top: 0.75rem;
     }
-    button.reset:hover {
+    button.reset:hover,
+    button.reset:focus {
       background-color: #5a6268;
     }
-    .result, #healthTips {
-      margin-top: 1rem;
-      font-weight: bold;
-      font-size: 1.1rem;
-      color: #333;
-      opacity: 0;
-      transition: opacity 0.5s ease-in-out;
+
+    /* Result text */
+    .result {
+      margin-top: 1.25rem;
+      font-size: 1.2rem;
+      font-weight: 700;
       min-height: 40px;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      border-radius: 6px;
+      padding: 0.5rem 1rem;
+      display: inline-block;
     }
-    .result.visible, #healthTips.visible {
+    .result.visible {
       opacity: 1;
     }
-    /* Color code categories */
-    .underweight { color: #0275d8; } /* Blue */
-    .normal { color: #28a745; }      /* Green */
-    .overweight { color: #ffc107; }  /* Yellow */
-    .obese { color: #dc3545; }       /* Red */
+
+    /* Health tip below result */
+    .health-tip {
+      margin-top: 0.8rem;
+      font-size: 1rem;
+      color: #333;
+      min-height: 48px;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      max-width: 320px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .health-tip.visible {
+      opacity: 1;
+    }
+
+    /* Color and background per BMI category */
+    .underweight {
+      color: #0275d8;
+      background-color: #dbe9f4;
+      border: 1px solid #0275d8;
+    }
+    .normal {
+      color: #28a745;
+      background-color: #d4edda;
+      border: 1px solid #28a745;
+    }
+    .overweight {
+      color: #856404;
+      background-color: #fff3cd;
+      border: 1px solid #856404;
+    }
+    .obese {
+      color: #dc3545;
+      background-color: #f8d7da;
+      border: 1px solid #dc3545;
+    }
 
     /* Responsive */
     @media (max-width: 400px) {
       .container {
-        width: 90vw;
+        padding: 1.5rem 1.8rem;
+      }
+      .health-tip {
+        max-width: 100%;
       }
     }
   </style>
 </head>
 <body>
-  <div class="container" role="main" aria-label="BMI Calculator">
-    <h2>
+  <main class="container" role="main" aria-label="Body Mass Index Calculator">
+    <h1>
       BMI Calculator
-      <span class="info-icon" tabindex="0" aria-describedby="bmi-info" role="tooltip" aria-label="BMI Information">?
-        <span class="tooltip" id="bmi-info">
-          BMI categories: Underweight &lt; 18.5, Normal 18.5-24.9, Overweight 25-29.9, Obesity ≥ 30.
+      <span tabindex="0" class="info-icon" aria-describedby="bmi-tooltip" role="tooltip" aria-label="BMI categories info">
+        ?
+        <span id="bmi-tooltip" class="tooltip" role="tooltip">
+          BMI categories: Underweight (&lt;18.5), Normal (18.5–24.9), Overweight (25–29.9), Obesity (≥30).
         </span>
       </span>
-    </h2>
+    </h1>
 
-    <label for="weight">Weight (kg)</label>
-    <input type="number" id="weight" placeholder="Enter weight in kg" step="0.1" min="0" aria-describedby="weight-error" />
-    <div id="weight-error" class="error" aria-live="polite"></div>
+    <form id="bmiForm" novalidate>
+      <label for="weight">Weight (kg)</label>
+      <input
+        type="number"
+        id="weight"
+        name="weight"
+        placeholder="Enter weight in kilograms"
+        step="0.1"
+        min="0"
+        aria-describedby="weightError"
+        required
+      />
+      <div id="weightError" class="error-message" aria-live="polite"></div>
 
-    <label for="height">Height (m)</label>
-    <input type="number" id="height" placeholder="Enter height in meters" step="0.01" min="0" aria-describedby="height-error" />
-    <div id="height-error" class="error" aria-live="polite"></div>
+      <label for="height">Height (m)</label>
+      <input
+        type="number"
+        id="height"
+        name="height"
+        placeholder="Enter height in meters"
+        step="0.01"
+        min="0"
+        aria-describedby="heightError"
+        required
+      />
+      <div id="heightError" class="error-message" aria-live="polite"></div>
 
-    <button id="calcBtn" type="button">Calculate BMI</button>
-    <button id="resetBtn" type="button" class="reset">Reset</button>
+      <button type="submit" id="calculateBtn">Calculate BMI</button>
+      <button type="button" id="resetBtn" class="reset">Reset</button>
+    </form>
 
     <div id="result" class="result" aria-live="polite" role="region"></div>
-    <div id="healthTips" aria-live="polite" role="region"></div>
-  </div>
+    <div id="healthTip" class="health-tip" aria-live="polite" role="region"></div>
+  </main>
 
   <script>
-    const weightInput = document.getElementById('weight');
-    const heightInput = document.getElementById('height');
-    const resultDiv = document.getElementById('result');
-    const tipsDiv = document.getElementById('healthTips');
-    const weightError = document.getElementById('weight-error');
-    const heightError = document.getElementById('height-error');
-    const calcBtn = document.getElementById('calcBtn');
-    const resetBtn = document.getElementById('resetBtn');
+    (() => {
+      // Grab elements
+      const form = document.getElementById('bmiForm');
+      const weightInput = document.getElementById('weight');
+      const heightInput = document.getElementById('height');
+      const resultDiv = document.getElementById('result');
+      const healthTipDiv = document.getElementById('healthTip');
+      const weightError = document.getElementById('weightError');
+      const heightError = document.getElementById('heightError');
+      const resetBtn = document.getElementById('resetBtn');
 
-    function getBMICategoryKey(bmi) {
-      if (bmi < 18.5) return "underweight";
-      else if (bmi < 24.9) return "normal";
-      else if (bmi < 29.9) return "overweight";
-      else return "obese";
-    }
+      // BMI categories and corresponding colors & tips
+      const bmiCategories = [
+        { key: 'underweight', max: 18.5, label: 'Underweight', colorClass: 'underweight', tip: 'You may need to gain weight. Consider a balanced diet rich in nutrients.' },
+        { key: 'normal', max: 24.9, label: 'Normal weight', colorClass: 'normal', tip: 'Great! Keep maintaining your healthy lifestyle.' },
+        { key: 'overweight', max: 29.9, label: 'Overweight', colorClass: 'overweight', tip: 'Try to increase physical activity and watch your diet.' },
+        { key: 'obese', max: Infinity, label: 'Obesity', colorClass: 'obese', tip: 'It is advised to consult a healthcare provider for guidance.' }
+      ];
 
-    function clearErrors() {
-      weightError.textContent = '';
-      heightError.textContent = '';
-      weightInput.classList.remove('input-error');
-      heightInput.classList.remove('input-error');
-    }
+      /**
+       * Validate inputs, show error messages if invalid.
+       * @returns {boolean} true if valid, false otherwise
+       */
+      function validateInputs() {
+        let valid = true;
+        clearErrors();
 
-    function validateInputs() {
-      clearErrors();
-      let valid = true;
+        const weightVal = parseFloat(weightInput.value);
+        const heightVal = parseFloat(heightInput.value);
 
-      if (!weightInput.value || parseFloat(weightInput.value) <= 0) {
-        weightError.textContent = 'Please enter a valid positive weight.';
-        valid = false;
-      }
-      if (!heightInput.value || parseFloat(heightInput.value) <= 0) {
-        heightError.textContent = 'Please enter a valid positive height.';
-        valid = false;
-      }
-      return valid;
-    }
+        if (isNaN(weightVal) || weightVal <= 0) {
+          weightError.textContent = 'Please enter a valid positive weight.';
+          weightInput.classList.add('error');
+          valid = false;
+        }
 
-    function showHealthTips(bmi) {
-      fetch('data/healthTips.json')
-        .then(response => response.json())
-        .then(tips => {
-          const categoryKey = getBMICategoryKey(bmi);
-          const tip = tips[categoryKey] || '';
-          tipsDiv.textContent = tip;
-          tipsDiv.classList.add('visible');
-        })
-        .catch(err => {
-          console.error('Failed to load health tips:', err);
-          tipsDiv.textContent = '';
-          tipsDiv.classList.remove('visible');
-        });
-    }
-
-    function calculateBMI() {
-      if (!validateInputs()) {
-        resultDiv.textContent = '';
-        resultDiv.classList.remove('visible');
-        tipsDiv.textContent = '';
-        tipsDiv.classList.remove('visible');
-        return;
-      }
-
-      const weight = parseFloat(weightInput.value);
-      const height = parseFloat(heightInput.value);
-      const bmi = weight / (height * height);
-      let category = '';
-
-      if (bmi < 18.5) category = 'Underweight';
-      else if (bmi < 24.9) category = 'Normal weight';
-      else if (bmi < 29.9) category = 'Overweight';
-      else category = 'Obesity';
-
-      resultDiv.textContent = `Your BMI is ${bmi.toFixed(2)} (${category})`;
-      resultDiv.className = `result visible ${getBMICategoryKey(bmi)}`;
-
-      showHealthTips(bmi);
-    }
-
-    function resetForm() {
-      weightInput.value = '';
-      heightInput.value = '';
-      clearErrors();
-      resultDiv.textContent = '';
-      tipsDiv.textContent = '';
-      resultDiv.classList.remove('visible', 'underweight', 'normal', 'overweight', 'obese');
-      tipsDiv.classList.remove('visible');
-      weightInput.focus();
-    }
-
-    calcBtn.addEventListener('click', calculateBMI);
-    resetBtn.addEventListener('click', resetForm);
-
-    // Optional: live validation on input change
-    weightInput.addEventListener('input', () => {
-      if (parseFloat(weightInput.value) > 0) weightError.textContent = '';
-    });
-    heightInput.addEventListener('input', () => {
-      if (parseFloat(height
+        if (isNaN(heightVal) || heightVal <= 0) {
+          heightError.textContent = 'Please enter a valid positive height.';
+         
