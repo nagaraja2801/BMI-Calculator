@@ -68,11 +68,11 @@
     button:hover {
       background-color: #0056b3;
     }
-    .result, #healthTips, #idealWeightTable {
+    .result, #healthTips, #idealWeightTable, #weightAdvice {
       margin-top: 1rem;
       font-size: 1rem;
     }
-    .result.visible, #healthTips.visible, #idealWeightTable.visible {
+    .result.visible, #healthTips.visible, #idealWeightTable.visible, #weightAdvice.visible {
       opacity: 1;
     }
     .underweight { color: #0275d8; }
@@ -131,6 +131,7 @@
     <div id="result" class="result"></div>
     <div id="healthTips"></div>
     <div id="idealWeightTable"></div>
+    <div id="weightAdvice"></div>
     <div id="bmiChart-container">
       <canvas id="bmiChart"></canvas>
     </div>
@@ -199,6 +200,18 @@
       document.getElementById('idealWeightTable').innerHTML =
         `<table><tr><th>Ideal Weight Range</th></tr><tr><td>${min.toFixed(1)} - ${max.toFixed(1)} ${unit === 'metric' ? 'kg' : 'lbs'}</td></tr></table>`;
       document.getElementById('idealWeightTable').className = 'visible';
+
+      // Weight gain/loss advice
+      let advice = '';
+      if (weight < min) {
+        advice = `You need to gain at least ${(min - weight).toFixed(1)} ${unit === 'metric' ? 'kg' : 'lbs'} to reach a normal BMI.`;
+      } else if (weight > max) {
+        advice = `You need to lose at least ${(weight - max).toFixed(1)} ${unit === 'metric' ? 'kg' : 'lbs'} to reach a normal BMI.`;
+      } else {
+        advice = `Your weight is within the ideal range.`;
+      }
+      document.getElementById('weightAdvice').textContent = advice;
+      document.getElementById('weightAdvice').className = 'visible';
 
       drawChart(bmi);
     }
