@@ -1,674 +1,221 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Advanced BMI & Fitness Calculator</title>
-<style>
-  body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #e9f0f8;
-    margin: 0;
-    padding: 1rem;
-    display: flex;
-    justify-content: center;
-  }
-  .container {
-    max-width: 450px;
-    background: white;
-    border-radius: 10px;
-    padding: 2rem;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-  }
-  h1 {
-    text-align: center;
-    margin-bottom: 1rem;
-  }
-  label {
-    display: block;
-    font-weight: 600;
-    margin-top: 1rem;
-  }
-  input[type="number"], select {
-    width: 100%;
-    padding: 8px 10px;
-    font-size: 1rem;
-    margin-top: 0.2rem;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    box-sizing: border-box;
-  }
-  .row {
-    display: flex;
-    justify-content: space-between;
-    gap: 1rem;
-  }
-  .row > div {
-    flex: 1;
-  }
-  button {
-    margin-top: 1.5rem;
-    width: 100%;
-    padding: 12px;
-    background-color: #007BFF;
-    border: none;
-    color: white;
-    font-size: 1.1rem;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-  button:hover {
-    background-color: #0056b3;
-  }
-  button.reset {
-    background-color: #6c757d;
-  }
-  button.reset:hover {
-    background-color: #5a6268;
-  }
-  .result-section {
-    margin-top: 2rem;
-  }
-  .result-section h2 {
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-  }
-  .bmi-value {
-    font-size: 1.6rem;
-    font-weight: 700;
-  }
-  .category {
-    font-weight: 700;
-    padding: 4px 10px;
-    border-radius: 5px;
-    color: white;
-    display: inline-block;
-    margin-left: 0.5rem;
-  }
-  .underweight { background: #5dade2; }
-  .normal { background: #28a745; }
-  .overweight { background: #ffc107; color: #212529; }
-  .obese { background: #dc3545; }
-  .bmi-bar {
-    margin-top: 1rem;
-    height: 20px;
-    border-radius: 10px;
-    background: linear-gradient(
-      to right,
-      #5dade2 0%, #5dade2 18.5%,
-      #28a745 18.5%, #28a745 24.9%,
-      #ffc107 24.9%, #ffc107 29.9%,
-      #dc3545 29.9%, #dc3545 100%
-    );
-    position: relative;
-  }
-  .bmi-marker {
-    position: absolute;
-    top: -5px;
-    width: 4px;
-    height: 30px;
-    background: #000;
-    border-radius: 2px;
-  }
-  .tips, .history, .calories, .macros, .weight-advice, .bodyfat, .waist-height, .gamification, .lang-switcher {
-    margin-top: 1rem;
-    padding: 10px;
-    background: #f8f9fa;
-    border-radius: 8px;
-  }
-  .tips strong, .calories strong {
-    display: block;
-    margin-bottom: 6px;
-  }
-  .history-list {
-    max-height: 150px;
-    overflow-y: auto;
-  }
-  .history-list li {
-    padding: 4px 0;
-    border-bottom: 1px solid #ddd;
-    font-size: 0.9rem;
-  }
-  .lang-switcher {
-    display: flex;
-    justify-content: flex-end;
-  }
-  .lang-switcher button {
-    background: transparent;
-    border: none;
-    font-weight: 700;
-    margin-left: 1rem;
-    cursor: pointer;
-    color: #007BFF;
-  }
-  .lang-switcher button.active {
-    text-decoration: underline;
-  }
-  @media (max-width: 480px) {
-    .row {
-      flex-direction: column;
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BMI Calculator</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon.png" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f4f8;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      padding: 1rem;
     }
-  }
-</style>
+    .container {
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      width: 360px;
+      max-width: 100%;
+      text-align: center;
+    }
+    h2 {
+      margin-bottom: 1rem;
+      position: relative;
+    }
+    label {
+      display: block;
+      text-align: left;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+      margin-top: 0.5rem;
+    }
+    input, select {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 0.25rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 1rem;
+      box-sizing: border-box;
+    }
+    .error {
+      color: #d93025;
+      font-size: 0.85rem;
+      height: 18px;
+      margin-bottom: 0.5rem;
+    }
+    button {
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      padding: 10px 0;
+      width: 100%;
+      font-size: 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 1rem;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .result, #healthTips, #idealWeightTable {
+      margin-top: 1rem;
+      font-size: 1rem;
+    }
+    .result.visible, #healthTips.visible, #idealWeightTable.visible {
+      opacity: 1;
+    }
+    .underweight { color: #0275d8; }
+    .normal { color: #28a745; }
+    .overweight {
+      color: #856404;
+      background-color: #fff3cd;
+      padding: 0.2em 0.5em;
+      border-radius: 4px;
+      display: inline-block;
+    }
+    .obese { color: #dc3545; }
+    table {
+      margin: 1rem auto;
+      border-collapse: collapse;
+      width: 100%;
+      max-width: 300px;
+    }
+    table, th, td {
+      border: 1px solid #ccc;
+    }
+    th, td {
+      padding: 6px;
+      text-align: center;
+    }
+    canvas {
+      margin-top: 1rem;
+      max-width: 100%;
+    }
+  </style>
 </head>
 <body>
-<div class="container" role="main" aria-label="Advanced BMI and Fitness Calculator">
-  <h1 id="title">BMI & Fitness Calculator</h1>
-  
-  <div class="lang-switcher" aria-label="Language Switcher">
-    <button id="enBtn" class="active" aria-pressed="true">English</button>
-    <button id="esBtn" aria-pressed="false">Español</button>
-  </div>
+  <div class="container">
+    <h2>BMI Calculator</h2>
+    <label for="weight">Weight</label>
+    <input type="number" id="weight" placeholder="Enter weight" step="0.1">
 
-  <label for="weightInput" id="weightLabel">Weight</label>
-  <div class="row">
-    <input type="number" id="weightInput" aria-describedby="weightUnit" min="1" step="0.1" />
-    <select id="weightUnit" aria-label="Weight unit">
-      <option value="kg">kg</option>
-      <option value="lb">lb</option>
+    <label for="unit">Unit</label>
+    <select id="unit">
+      <option value="metric">kg/m</option>
+      <option value="imperial">lbs/in</option>
     </select>
+
+    <label for="height">Height</label>
+    <input type="number" id="height" placeholder="Enter height" step="0.01">
+
+    <div id="weight-error" class="error"></div>
+    <div id="height-error" class="error"></div>
+
+    <button onclick="calculateBMI()">Calculate BMI</button>
+    <div id="result" class="result"></div>
+    <div id="healthTips"></div>
+    <div id="idealWeightTable"></div>
+    <canvas id="bmiChart"></canvas>
   </div>
 
-  <label for="heightInput" id="heightLabel">Height</label>
-  <div class="row">
-    <input type="number" id="heightInput" aria-describedby="heightUnit" min="0.5" step="0.01" />
-    <select id="heightUnit" aria-label="Height unit">
-      <option value="m">meters</option>
-      <option value="in">inches</option>
-    </select>
-  </div>
+  <script>
+    function calculateBMI() {
+      const weight = parseFloat(document.getElementById('weight').value);
+      const height = parseFloat(document.getElementById('height').value);
+      const unit = document.getElementById('unit').value;
 
-  <div class="row">
-    <div>
-      <label for="ageInput" id="ageLabel">Age</label>
-      <input type="number" id="ageInput" min="1" max="120" />
-    </div>
-    <div>
-      <label for="genderInput" id="genderLabel">Gender</label>
-      <select id="genderInput" aria-label="Select gender">
-        <option value="">--</option>
-        <option value="male">Male</option>
-        <option value="female">Female</option>
-      </select>
-    </div>
-  </div>
-
-  <label for="activityInput" id="activityLabel">Activity Level</label>
-  <select id="activityInput" aria-label="Select your activity level">
-    <option value="">--</option>
-    <option value="1.2">Sedentary (little or no exercise)</option>
-    <option value="1.375">Lightly active (1-3 days/week)</option>
-    <option value="1.55">Moderately active (3-5 days/week)</option>
-    <option value="1.725">Very active (6-7 days/week)</option>
-    <option value="1.9">Extra active (very hard exercise/job)</option>
-  </select>
-
-  <button id="calcBtn">Calculate</button>
-  <button id="resetBtn" class="reset">Reset</button>
-
-  <section class="result-section" aria-live="polite" aria-atomic="true" aria-relevant="all">
-    <h2 id="bmiTitle">BMI Result</h2>
-    <div id="bmiOutput" class="bmi-value"></div>
-    <div class="bmi-bar" aria-hidden="true">
-      <div id="bmiMarker" class="bmi-marker"></div>
-    </div>
-    <div id="bmiCategory" class="category"></div>
-
-    <div id="weightAdvice" class="weight-advice"></div>
-    <div id="healthTips" class="tips"></div>
-    <div id="bodyFatEst" class="bodyfat"></div>
-    <div id="waistHeightRatio" class="waist-height"></div>
-
-    <h2 id="calorieTitle">Calorie & Macros</h2>
-    <div id="calorieOutput" class="calories"></div>
-
-    <h2 id="historyTitle">History</h2>
-    <ul id="historyList" class="history-list"></ul>
-
-    <div id="gamification" class="gamification"></div>
-  </section>
-</div>
-
-<script>
-  (() => {
-    // Multilingual support
-    const translations = {
-      en: {
-        title: "BMI & Fitness Calculator",
-        weightLabel: "Weight",
-        heightLabel: "Height",
-        ageLabel: "Age",
-        genderLabel: "Gender",
-        activityLabel: "Activity Level",
-        calcBtn: "Calculate",
-        resetBtn: "Reset",
-        bmiTitle: "BMI Result",
-        calorieTitle: "Calorie & Macros",
-        historyTitle: "History",
-        genderMale: "Male",
-        genderFemale: "Female",
-        bmiCategories: {
-          underweight: "Underweight",
-          normal: "Normal weight",
-          overweight: "Overweight",
-          obese: "Obesity"
-        },
-        activityLevels: {
-          "1.2": "Sedentary (little or no exercise)",
-          "1.375": "Lightly active (1-3 days/week)",
-          "1.55": "Moderately active (3-5 days/week)",
-          "1.725": "Very active (6-7 days/week)",
-          "1.9": "Extra active (very hard exercise/job)"
-        },
-        tips: {
-          underweight: "You may need to gain weight. Consider a balanced diet rich in nutrients.",
-          normal: "Great! Keep maintaining your healthy lifestyle.",
-          overweight: "Try to increase physical activity and watch your diet.",
-          obese: "It is advised to consult a healthcare provider for guidance."
-        },
-        weightAdviceGain: "Ideal weight range: ",
-        weightAdviceLoss: "Ideal weight range: ",
-        macrosTitle: "Macros breakdown",
-        caloriesNeeded: "Calories needed per day:",
-        protein: "Protein",
-        fat: "Fat",
-        carbs: "Carbohydrates",
-        bodyFatEstimation: "Estimated Body Fat Percentage:",
-        waistHeightRatio: "Waist to Height Ratio:",
-        gamificationBadges: {
-          underweight: "Badge earned: Need to gain weight!",
-          normal: "Badge earned: Healthy BMI!",
-          overweight: "Badge earned: Work in progress!",
-          obese: "Badge earned: Consult a doctor!"
-        }
-      },
-      es: {
-        title: "Calculadora avanzada de IMC y fitness",
-        weightLabel: "Peso",
-        heightLabel: "Altura",
-        ageLabel: "Edad",
-        genderLabel: "Género",
-        activityLabel: "Nivel de actividad",
-        calcBtn: "Calcular",
-        resetBtn: "Reiniciar",
-        bmiTitle: "Resultado IMC",
-        calorieTitle: "Calorías y macros",
-        historyTitle: "Historial",
-        genderMale: "Masculino",
-        genderFemale: "Femenino",
-        bmiCategories: {
-          underweight: "Bajo peso",
-          normal: "Peso normal",
-          overweight: "Sobrepeso",
-          obese: "Obesidad"
-        },
-        activityLevels: {
-          "1.2": "Sedentario (poco o ningún ejercicio)",
-          "1.375": "Ligeramente activo (1-3 días/semana)",
-          "1.55": "Moderadamente activo (3-5 días/semana)",
-          "1.725": "Muy activo (6-7 días/semana)",
-          "1.9": "Extra activo (ejercicio/trabajo duro)"
-        },
-        tips: {
-          underweight: "Podrías necesitar ganar peso. Considera una dieta balanceada rica en nutrientes.",
-          normal: "¡Genial! Sigue manteniendo tu estilo de vida saludable.",
-          overweight: "Intenta aumentar la actividad física y cuidar tu dieta.",
-          obese: "Se recomienda consultar a un profesional de la salud."
-        },
-        weightAdviceGain: "Rango de peso ideal: ",
-        weightAdviceLoss: "Rango de peso ideal: ",
-        macrosTitle: "Distribución de macros",
-        caloriesNeeded: "Calorías necesarias por día:",
-        protein: "Proteína",
-        fat: "Grasa",
-        carbs: "Carbohidratos",
-        bodyFatEstimation: "Porcentaje estimado de grasa corporal:",
-        waistHeightRatio: "Relación cintura-altura:",
-        gamificationBadges: {
-          underweight: "Insignia ganada: ¡Necesitas ganar peso!",
-          normal: "Insignia ganada: ¡IMC saludable!",
-          overweight: "Insignia ganada: ¡En progreso!",
-          obese: "Insignia ganada: ¡Consulta un médico!"
-        }
-      }
-    };
-
-    // Initial language
-    let currentLang = 'en';
-
-    // Elements
-    const langButtons = {
-      en: document.getElementById('enBtn'),
-      es: document.getElementById('esBtn')
-    };
-
-    const labels = {
-      title: document.getElementById('title'),
-      weightLabel: document.getElementById('weightLabel'),
-      heightLabel: document.getElementById('heightLabel'),
-      ageLabel: document.getElementById('ageLabel'),
-      genderLabel: document.getElementById('genderLabel'),
-      activityLabel: document.getElementById('activityLabel'),
-      calcBtn: document.getElementById('calcBtn'),
-      resetBtn: document.getElementById('resetBtn'),
-      bmiTitle: document.getElementById('bmiTitle'),
-      calorieTitle: document.getElementById('calorieTitle'),
-      historyTitle: document.getElementById('historyTitle')
-    };
-
-    // Inputs & outputs
-    const weightInput = document.getElementById('weightInput');
-    const weightUnit = document.getElementById('weightUnit');
-    const heightInput = document.getElementById('heightInput');
-    const heightUnit = document.getElementById('heightUnit');
-    const ageInput = document.getElementById('ageInput');
-    const genderInput = document.getElementById('genderInput');
-    const activityInput = document.getElementById('activityInput');
-    const bmiOutput = document.getElementById('bmiOutput');
-    const bmiCategory = document.getElementById('bmiCategory');
-    const bmiMarker = document.getElementById('bmiMarker');
-    const weightAdvice = document.getElementById('weightAdvice');
-    const healthTips = document.getElementById('healthTips');
-    const calorieOutput = document.getElementById('calorieOutput');
-    const historyList = document.getElementById('historyList');
-    const resetBtn = document.getElementById('resetBtn');
-    const calcBtn = document.getElementById('calcBtn');
-    const bodyFatEst = document.getElementById('bodyFatEst');
-    const waistHeightRatio = document.getElementById('waistHeightRatio');
-    const gamification = document.getElementById('gamification');
-
-    // Convert weight to kg
-    function weightToKg(weight, unit) {
-      if (unit === 'lb') {
-        return weight * 0.453592;
-      }
-      return weight;
-    }
-
-    // Convert height to meters
-    function heightToMeters(height, unit) {
-      if (unit === 'in') {
-        return height * 0.0254;
-      }
-      return height;
-    }
-
-    // Get BMI category key
-    function getBMICategoryKey(bmi) {
-      if (bmi < 18.5) return "underweight";
-      else if (bmi < 24.9) return "normal";
-      else if (bmi < 29.9) return "overweight";
-      else return "obese";
-    }
-
-    // Calculate BMR using Mifflin-St Jeor Equation
-    function calculateBMR(weightKg, heightCm, age, gender) {
-      if (!weightKg || !heightCm || !age || !gender) return null;
-      if (gender === "male") {
-        return 10 * weightKg + 6.25 * heightCm - 5 * age + 5;
-      } else if (gender === "female") {
-        return 10 * weightKg + 6.25 * heightCm - 5 * age - 161;
-      }
-      return null;
-    }
-
-    // Calculate TDEE = BMR * activity factor
-    function calculateTDEE(bmr, activityFactor) {
-      if (!bmr || !activityFactor) return null;
-      return bmr * activityFactor;
-    }
-
-    // Calculate macros (protein, fat, carbs) based on calories
-    function calculateMacros(calories) {
-      // Common recommendation: Protein 20%, Fat 30%, Carbs 50%
-      return {
-        protein: Math.round((calories * 0.20) / 4), // 4 cal per gram protein
-        fat: Math.round((calories * 0.30) / 9),     // 9 cal per gram fat
-        carbs: Math.round((calories * 0.50) / 4)    // 4 cal per gram carbs
-      };
-    }
-
-    // Ideal weight range for BMI 18.5 - 24.9
-    function idealWeightRange(heightM) {
-      return {
-        min: (18.5 * heightM * heightM).toFixed(1),
-        max: (24.9 * heightM * heightM).toFixed(1)
-      };
-    }
-
-    // Body fat estimation using BMI, age, gender
-    // Using Deurenberg formula: Body Fat % = 1.2*BMI + 0.23*Age - 10.8*Sex - 5.4
-    // Sex: 1 for male, 0 for female
-    function estimateBodyFat(bmi, age, gender) {
-      if (!bmi || !age || !gender) return null;
-      const sex = (gender === "male") ? 1 : 0;
-      return (1.2 * bmi + 0.23 * age - 10.8 * sex - 5.4).toFixed(1);
-    }
-
-    // Waist to height ratio advice
-    function waistHeightAdvice(waistCm, heightCm) {
-      if (!waistCm || !heightCm) return null;
-      const ratio = (waistCm / heightCm).toFixed(2);
-      let advice = "";
-      if (ratio <= 0.35) advice = "Excellent";
-      else if (ratio <= 0.43) advice = "Healthy";
-      else if (ratio <= 0.53) advice = "Moderate risk";
-      else advice = "High risk";
-
-      return {ratio, advice};
-    }
-
-    // Save to localStorage history
-    function saveHistory(record) {
-      let history = JSON.parse(localStorage.getItem('bmiHistory')) || [];
-      history.unshift(record);
-      if(history.length > 10) history.pop(); // keep max 10
-      localStorage.setItem('bmiHistory', JSON.stringify(history));
-      renderHistory();
-    }
-
-    // Render history list
-    function renderHistory() {
-      let history = JSON.parse(localStorage.getItem('bmiHistory')) || [];
-      historyList.innerHTML = '';
-      if (history.length === 0) {
-        historyList.innerHTML = `<li>No history found.</li>`;
+      if (!weight || weight <= 0) {
+        document.getElementById('weight-error').textContent = "Enter valid weight.";
         return;
-      }
-      history.forEach(h => {
-        const li = document.createElement('li');
-        li.textContent = `${h.date} - BMI: ${h.bmi} (${h.category})`;
-        historyList.appendChild(li);
-      });
-    }
+      } else document.getElementById('weight-error').textContent = "";
 
-    // Update text content for current language
-    function updateLanguageTexts() {
-      const t = translations[currentLang];
-      labels.title.textContent = t.title;
-      labels.weightLabel.textContent = t.weightLabel;
-      labels.heightLabel.textContent = t.heightLabel;
-      labels.ageLabel.textContent = t.ageLabel;
-      labels.genderLabel.textContent = t.genderLabel;
-      labels.activityLabel.textContent = t.activityLabel;
-      labels.calcBtn.textContent = t.calcBtn;
-      labels.resetBtn.textContent = t.resetBtn;
-      labels.bmiTitle.textContent = t.bmiTitle;
-      labels.calorieTitle.textContent = t.calorieTitle;
-      labels.historyTitle.textContent = t.historyTitle;
-
-      // Gender options
-      genderInput.options[1].textContent = t.genderMale;
-      genderInput.options[2].textContent = t.genderFemale;
-
-      // Activity levels
-      const activityOptions = activityInput.options;
-      for(let i=1; i < activityOptions.length; i++){
-        const val = activityOptions[i].value;
-        activityOptions[i].textContent = t.activityLevels[val];
-      }
-
-      // Update existing results to translate if present
-      if(bmiCategory.textContent){
-        const categoryKey = bmiCategory.dataset.key;
-        bmiCategory.textContent = t.bmiCategories[categoryKey];
-        healthTips.textContent = t.tips[categoryKey];
-        gamification.textContent = t.gamificationBadges[categoryKey];
-      }
-      if(weightAdvice.textContent){
-        weightAdvice.textContent = t.weightAdviceGain + weightAdvice.dataset.range;
-      }
-      if(calorieOutput.textContent){
-        // Recalculate or just keep
-      }
-    }
-
-    // Calculate and display all results
-    function calculateAll() {
-      const t = translations[currentLang];
-      // Inputs validation
-      let weightVal = parseFloat(weightInput.value);
-      let heightVal = parseFloat(heightInput.value);
-      let ageVal = parseInt(ageInput.value);
-      let genderVal = genderInput.value;
-      let activityVal = activityInput.value;
-
-      if (isNaN(weightVal) || weightVal <= 0) {
-        alert("Please enter a valid weight.");
-        weightInput.focus();
+      if (!height || height <= 0) {
+        document.getElementById('height-error').textContent = "Enter valid height.";
         return;
-      }
-      if (isNaN(heightVal) || heightVal <= 0) {
-        alert("Please enter a valid height.");
-        heightInput.focus();
-        return;
-      }
-      if (isNaN(ageVal) || ageVal < 1 || ageVal > 120) {
-        alert("Please enter a valid age (1-120).");
-        ageInput.focus();
-        return;
-      }
-      if (!genderVal) {
-        alert("Please select your gender.");
-        genderInput.focus();
-        return;
-      }
-      if (!activityVal) {
-        alert("Please select your activity level.");
-        activityInput.focus();
-        return;
-      }
+      } else document.getElementById('height-error').textContent = "";
 
-      // Convert weight and height
-      const weightKg = weightToKg(weightVal, weightUnit.value);
-      const heightM = heightToMeters(heightVal, heightUnit.value);
-      const heightCm = heightM * 100;
-
-      // Calculate BMI
-      const bmi = (weightKg / (heightM * heightM)).toFixed(1);
-      bmiOutput.textContent = bmi;
-
-      // BMI category
-      const categoryKey = getBMICategoryKey(bmi);
-      bmiCategory.textContent = t.bmiCategories[categoryKey];
-      bmiCategory.className = `category ${categoryKey}`;
-      bmiCategory.dataset.key = categoryKey;
-
-      // Position BMI marker on bar (scale BMI from 10 to 40 for example)
-      let markerPos = ((bmi - 10) / 30) * 100;
-      if(markerPos < 0) markerPos = 0;
-      if(markerPos > 100) markerPos = 100;
-      bmiMarker.style.left = `${markerPos}%`;
-
-      // Health tips based on BMI
-      healthTips.textContent = t.tips[categoryKey];
-
-      // Ideal weight range
-      const idealRange = idealWeightRange(heightM);
-      weightAdvice.textContent = `${t.weightAdviceGain}${idealRange.min} kg - ${idealRange.max} kg`;
-      weightAdvice.dataset.range = `${idealRange.min} kg - ${idealRange.max} kg`;
-
-      // Calculate BMR and TDEE
-      const bmr = calculateBMR(weightKg, heightCm, ageVal, genderVal);
-      const tdee = calculateTDEE(bmr, parseFloat(activityVal));
-
-      // Calculate macros
-      const macros = calculateMacros(tdee);
-
-      calorieOutput.innerHTML = `
-        <strong>${t.caloriesNeeded}</strong> ${tdee ? Math.round(tdee) : "N/A"} kcal/day<br />
-        <strong>${t.protein}:</strong> ${macros.protein} g/day<br />
-        <strong>${t.fat}:</strong> ${macros.fat} g/day<br />
-        <strong>${t.carbs}:</strong> ${macros.carbs} g/day
-      `;
-
-      // Body fat estimate
-      const bf = estimateBodyFat(bmi, ageVal, genderVal);
-      if (bf) {
-        bodyFatEst.textContent = `${t.bodyFatEstimation} ${bf}%`;
+      let bmi;
+      if (unit === "metric") {
+        bmi = weight / (height * height);
       } else {
-        bodyFatEst.textContent = "";
+        bmi = (weight / (height * height)) * 703;
       }
 
-      // Waist to height ratio - for demo, we use height only, no waist input, so hide or skip
-      waistHeightRatio.textContent = "";
+      let category = '', className = '';
+      if (bmi < 18.5) { category = 'Underweight'; className = 'underweight'; }
+      else if (bmi < 25) { category = 'Normal weight'; className = 'normal'; }
+      else if (bmi < 30) { category = 'Overweight'; className = 'overweight'; }
+      else { category = 'Obese'; className = 'obese'; }
 
-      // Save result to history
-      const now = new Date();
-      saveHistory({
-        date: now.toLocaleString(),
-        bmi: bmi,
-        category: t.bmiCategories[categoryKey]
-      });
+      document.getElementById('result').textContent = `Your BMI is ${bmi.toFixed(2)} (${category})`;
+      document.getElementById('result').className = `result visible ${className}`;
 
-      // Gamification badges
-      gamification.textContent = t.gamificationBadges[categoryKey];
+      const tips = {
+        underweight: "Consider gaining weight with nutrient-rich foods.",
+        normal: "Maintain your healthy habits!",
+        overweight: "Increase physical activity and monitor diet.",
+        obese: "Consult a healthcare provider for weight management."
+      };
+      document.getElementById('healthTips').textContent = tips[className];
+      document.getElementById('healthTips').className = 'visible';
+
+      // Ideal weight table
+      let min = 18.5 * height * height;
+      let max = 24.9 * height * height;
+      if (unit === 'imperial') {
+        min = min / 703;
+        max = max / 703;
+      }
+      document.getElementById('idealWeightTable').innerHTML =
+        `<table><tr><th>Ideal Weight Range</th></tr><tr><td>${min.toFixed(1)} - ${max.toFixed(1)} ${unit === 'metric' ? 'kg' : 'lbs'}</td></tr></table>`;
+      document.getElementById('idealWeightTable').className = 'visible';
+
+      drawChart(bmi);
     }
 
-    // Reset all fields and results
-    function resetAll() {
-      weightInput.value = '';
-      heightInput.value = '';
-      ageInput.value = '';
-      genderInput.selectedIndex = 0;
-      activityInput.selectedIndex = 0;
-      bmiOutput.textContent = '';
-      bmiCategory.textContent = '';
-      bmiMarker.style.left = '0%';
-      weightAdvice.textContent = '';
-      healthTips.textContent = '';
-      calorieOutput.textContent = '';
-      bodyFatEst.textContent = '';
-      waistHeightRatio.textContent = '';
-      gamification.textContent = '';
-      historyList.innerHTML = '';
-      localStorage.removeItem('bmiHistory');
-    }
-
-    // Language switcher event
-    Object.keys(langButtons).forEach(lang => {
-      langButtons[lang].addEventListener('click', () => {
-        currentLang = lang;
-        updateLanguageTexts();
-        Object.keys(langButtons).forEach(l => {
-          langButtons[l].classList.toggle('active', l === lang);
-          langButtons[l].setAttribute('aria-pressed', l === lang ? 'true' : 'false');
-        });
+    function drawChart(bmi) {
+      const ctx = document.getElementById('bmiChart').getContext('2d');
+      if (window.bmiChart) window.bmiChart.destroy();
+      window.bmiChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Underweight', 'Normal', 'Overweight', 'Obese'],
+          datasets: [{
+            label: 'BMI Range',
+            data: [18.5, 24.9, 29.9, 40],
+            backgroundColor: ['#0275d8', '#28a745', '#ffc107', '#dc3545']
+          }, {
+            label: 'Your BMI',
+            data: [0, 0, 0, 0],
+            backgroundColor: ['#6c757d']
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            title: { display: true, text: 'BMI Categories' },
+            legend: { display: true, labels: { usePointStyle: true } }
+          },
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
       });
-    });
-
-    // Event listeners
-    calcBtn.addEventListener('click', calculateAll);
-    resetBtn.addEventListener('click', resetAll);
-
-    // Render history on load
-    renderHistory();
-    updateLanguageTexts();
-
-  })();
-</script>
-
+      const categoryIndex = bmi < 18.5 ? 0 : bmi < 25 ? 1 : bmi < 30 ? 2 : 3;
+      window.bmiChart.data.datasets[1].data[categoryIndex] = bmi;
+      window.bmiChart.update();
+    }
+  </script>
 </body>
 </html>
-
