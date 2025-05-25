@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>BMI Calculator with Admin Panel</title>
+<title>BMI Calculator</title>
 <style>
   body {
     font-family: Arial, sans-serif;
@@ -59,15 +58,10 @@
   button:hover {
     background-color: #0056b3;
   }
-  #bmiResult, #weightRangeAdvice, #adviceQuote {
+  #bmiResult, #weightRangeAdvice, #calorieAdvice, #healthTips {
     margin-top: 1rem;
     font-weight: 600;
     color: #222;
-  }
-  #adviceQuote {
-    font-style: italic;
-    color: #555;
-    font-weight: 400;
   }
   #bmiChartContainer {
     margin-top: 1rem;
@@ -85,311 +79,81 @@
     background-color: green;
     transition: width 1.5s ease, background-color 1.5s ease;
   }
-  #authSection, #adminPanel {
-    margin-bottom: 1.5rem;
-    padding: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-  }
-  #adminDashboard {
-    max-width: 600px;
-    margin-top: 2rem;
-    background: #fff;
-    border: 2px solid #333;
-    padding: 15px;
-    border-radius: 8px;
-    text-align: left;
-    display: none;
-  }
-  #usersData {
-    margin-top: 10px;
-    max-height: 400px;
-    overflow-y: auto;
-    border: 1px solid #ccc;
-    padding: 10px;
-    font-size: 0.9rem;
-  }
-  #usersData div {
-    border-bottom: 1px solid #ccc;
-    padding: 10px 0;
-  }
-  .error {
-    color: red;
-    margin-top: 0.5rem;
-    font-weight: 600;
-  }
-  .success {
-    color: green;
-    margin-top: 0.5rem;
-    font-weight: 600;
-  }
 </style>
 </head>
 <body>
-  <div class="container">
-    <h2>BMI Calculator with User Login</h2>
-
-    <div id="authSection">
-      <h3>👤 User Login / Register (optional)</h3>
-      <label for="username">Username</label>
-      <input type="text" id="username" placeholder="Enter username" />
-      <label for="password">Password</label>
-      <input type="password" id="password" placeholder="Enter password" />
-      <button onclick="loginUser()">Login / Register</button>
-      <div id="authMessage"></div>
-    </div>
-
-    <label for="height">Height (cm):</label>
-    <input type="number" id="height" placeholder="Enter your height in cm" min="50" max="300" />
-    
-    <label for="weight">Weight (kg):</label>
-    <input type="number" id="weight" placeholder="Enter your weight in kg" min="10" max="500" />
-    
-    <button onclick="calculateBMI()">Calculate BMI</button>
-
-    <div id="bmiResult"></div>
-    <div id="weightRangeAdvice"></div>
-    <div id="adviceQuote"></div>
-
-    <div id="bmiChartContainer" aria-label="BMI Visualization">
-      <div id="bmiBar"></div>
-    </div>
-
-    <hr style="margin-top: 2rem; margin-bottom: 1rem;" />
-
-    <!-- Admin Login Section -->
-    <div id="adminPanel">
-      <h3>🔒 Admin Login</h3>
-      <label for="adminUsername">Admin Username</label>
-      <input type="text" id="adminUsername" />
-      <label for="adminPassword">Admin Password</label>
-      <input type="password" id="adminPassword" />
-      <button onclick="adminLogin()">Login as Admin</button>
-      <p id="adminMessage" class="error"></p>
-    </div>
-
-    <div id="adminDashboard">
-      <h3>Admin Dashboard - User Submissions</h3>
-      <button onclick="adminLogout()">Logout Admin</button>
-      <div id="usersData"></div>
-    </div>
+<div class="container">
+  <h2>BMI Calculator</h2>
+  <label for="height">Height (cm):</label>
+  <input type="number" id="height" placeholder="Enter your height in cm" min="50" max="300" />
+  <label for="weight">Weight (kg):</label>
+  <input type="number" id="weight" placeholder="Enter your weight in kg" min="10" max="500" />
+  <button onclick="calculateBMI()">Calculate BMI</button>
+  <div id="bmiResult"></div>
+  <div id="weightRangeAdvice"></div>
+  <div id="calorieAdvice"></div>
+  <div id="healthTips"></div>
+  <div id="bmiChartContainer" aria-label="BMI Visualization">
+    <div id="bmiBar"></div>
   </div>
-
+</div>
 <script>
-  // Admin credentials (hardcoded for demo)
-  const ADMIN_USER = "admin";
-  const ADMIN_PASS = "admin123";
+function calculateBMI() {
+  const heightCm = parseFloat(document.getElementById('height').value);
+  const weightKg = parseFloat(document.getElementById('weight').value);
+  const bmiResult = document.getElementById('bmiResult');
+  const weightRange = document.getElementById('weightRangeAdvice');
+  const calorieAdvice = document.getElementById('calorieAdvice');
+  const healthTips = document.getElementById('healthTips');
+  const bmiBar = document.getElementById('bmiBar');
 
-  let loggedInUser = null;
-  let adminLoggedIn = false;
-
-  function loginUser() {
-    const user = document.getElementById('username').value.trim();
-    const pass = document.getElementById('password').value.trim();
-    const authMsg = document.getElementById('authMessage');
-    authMsg.textContent = "";
-    authMsg.className = "";
-
-    if (!user || !pass) {
-      authMsg.textContent = "Username and password are required.";
-      authMsg.className = "error";
-      return;
-    }
-    const stored = localStorage.getItem(`user_${user}`);
-    if (stored) {
-      // User exists, verify password
-      const userData = JSON.parse(stored);
-      if (userData.password !== btoa(pass)) {
-        authMsg.textContent = "Incorrect password.";
-        authMsg.className = "error";
-        return;
-      }
-      loggedInUser = user;
-      authMsg.textContent = `Welcome back, ${user}!`;
-      authMsg.className = "success";
-      loadUserLastData(userData);
-    } else {
-      // Register new user
-      const newUser = {
-        password: btoa(pass),
-        submissions: []
-      };
-      localStorage.setItem(`user_${user}`, JSON.stringify(newUser));
-      loggedInUser = user;
-      authMsg.textContent = `User ${user} registered and logged in.`;
-      authMsg.className = "success";
-    }
+  if (!heightCm || !weightKg || heightCm <= 0 || weightKg <= 0) {
+    bmiResult.textContent = "Please enter valid height and weight.";
+    return;
   }
 
-  function loadUserLastData(userData) {
-    // If user has previous submissions, fill the latest height & weight inputs
-    if (userData.submissions.length > 0) {
-      const last = userData.submissions[userData.submissions.length - 1];
-      document.getElementById('height').value = last.height;
-      document.getElementById('weight').value = last.weight;
-      // Optionally show last BMI & advice
-      displayBMIResults(last.bmi, last.height, last.weight);
-    }
+  const heightM = heightCm / 100;
+  const bmi = weightKg / (heightM * heightM);
+  const bmiRounded = bmi.toFixed(1);
+
+  bmiResult.textContent = `Your BMI is: ${bmiRounded}`;
+  
+  const minWeight = (18.5 * heightM * heightM).toFixed(1);
+  const maxWeight = (24.9 * heightM * heightM).toFixed(1);
+  weightRange.textContent = `Ideal weight range: ${minWeight} kg - ${maxWeight} kg`;
+
+  const bmiPercent = Math.min(bmi, 40) / 40 * 100;
+  bmiBar.style.width = bmiPercent + '%';
+
+  let color = "green";
+  let calorieMsg = "";
+  let tips = "";
+
+  if (bmi < 18.5) {
+    color = "#3498db";
+    calorieMsg = "Increase daily calorie intake with nutritious food (add 300–500 kcal/day).";
+    tips = "Tip: Eat more frequently, choose nutrient-rich snacks, and strength train.";
+  } else if (bmi < 25) {
+    color = "#2ecc71";
+    calorieMsg = "Maintain your current calorie intake with balanced meals (around 2000–2500 kcal/day).";
+    tips = "Tip: Stay active and keep a regular meal schedule.";
+  } else if (bmi < 30) {
+    color = "#f1c40f";
+    calorieMsg = "Slight calorie deficit may help (reduce 300–500 kcal/day).";
+    tips = "Tip: Include fiber-rich food and regular exercise in your routine.";
+  } else {
+    color = "#e74c3c";
+    calorieMsg = "Consider significant calorie reduction under medical guidance.";
+    tips = "Tip: Prioritize whole foods, limit sugar, and consult a dietitian.";
   }
 
-  function calculateBMI() {
-    const heightCm = parseFloat(document.getElementById('height').value);
-    const weightKg = parseFloat(document.getElementById('weight').value);
-    const bmiResultDiv = document.getElementById('bmiResult');
-    const weightRangeDiv = document.getElementById('weightRangeAdvice');
-    const adviceDiv = document.getElementById('adviceQuote');
-    const bmiBar = document.getElementById('bmiBar');
-
-    // Clear previous results
-    bmiResultDiv.textContent = "";
-    weightRangeDiv.textContent = "";
-    adviceDiv.textContent = "";
-    bmiBar.style.width = "0";
-    bmiBar.style.backgroundColor = "green";
-
-    if (!heightCm || !weightKg || heightCm <= 0 || weightKg <= 0) {
-      bmiResultDiv.textContent = "Please enter valid positive numbers for height and weight.";
-      return;
-    }
-
-    const heightM = heightCm / 100;
-    const bmi = weightKg / (heightM * heightM);
-    const bmiRounded = bmi.toFixed(1);
-
-    displayBMIResults(bmiRounded, heightCm, weightKg);
-
-    // Save user data if logged in
-    if (loggedInUser) {
-      const userDataRaw = localStorage.getItem(`user_${loggedInUser}`);
-      if (userDataRaw) {
-        const userData = JSON.parse(userDataRaw);
-
-        const submission = {
-          timestamp: new Date().toISOString(),
-          height: heightCm,
-          weight: weightKg,
-          bmi: bmiRounded
-        };
-
-        userData.submissions.push(submission);
-        localStorage.setItem(`user_${loggedInUser}`, JSON.stringify(userData));
-      }
-    }
-  }
-
-  function displayBMIResults(bmiRounded, heightCm, weightKg) {
-    const bmiResultDiv = document.getElementById('bmiResult');
-    const weightRangeDiv = document.getElementById('weightRangeAdvice');
-    const adviceDiv = document.getElementById('adviceQuote');
-    const bmiBar = document.getElementById('bmiBar');
-
-    bmiResultDiv.textContent = `Your BMI is: ${bmiRounded}`;
-
-    const heightM = heightCm / 100;
-    const minWeight = (18.5 * heightM * heightM).toFixed(1);
-    const maxWeight = (24.9 * heightM * heightM).toFixed(1);
-    weightRangeDiv.textContent = `Ideal weight range: ${minWeight} kg - ${maxWeight} kg`;
-
-    // Bar width percent (max 40 BMI)
-    const bmiNum = parseFloat(bmiRounded);
-    const bmiPercent = Math.min(bmiNum, 40) / 40 * 100;
-    bmiBar.style.width = bmiPercent + '%';
-
-    // Set bar color and advice by BMI category
-    let advice = "";
-    let barColor = "green";
-
-    if (bmiNum < 18.5) {
-      barColor = "#3498db"; // blue
-      advice = "Underweight: Focus on nutrient-rich foods to gain healthy weight. “Health is the greatest gift.”";
-    } else if (bmiNum < 25) {
-      barColor = "#2ecc71"; // green
-      advice = "Normal weight: Keep up the great work maintaining your health! “Wellness is a connection of paths: knowledge and action.”";
-    } else if (bmiNum < 30) {
-      barColor = "#f1c40f"; // yellow
-      advice = "Overweight: Incorporate more activity and balanced meals. “Small steps every day lead to big results.”";
-    } else {
-      barColor = "#e74c3c"; // red
-      advice = "Obese: Consider consulting a healthcare professional for guidance. “Your health is worth every effort.”";
-    }
-
-    bmiBar.style.backgroundColor = barColor;
-    adviceDiv.textContent = advice;
-  }
-
-  // Admin login/logout
-  function adminLogin() {
-    const adminUser = document.getElementById('adminUsername').value.trim();
-    const adminPass = document.getElementById('adminPassword').value.trim();
-    const adminMsg = document.getElementById('adminMessage');
-
-    adminMsg.textContent = "";
-
-    if (adminUser === ADMIN_USER && adminPass === ADMIN_PASS) {
-      adminLoggedIn = true;
-      document.getElementById('adminPanel').style.display = 'none';
-      document.getElementById('adminDashboard').style.display = 'block';
-      loadAllUserData();
-    } else {
-      adminMsg.textContent = "Invalid admin credentials.";
-    }
-  }
-
-  function adminLogout() {
-    adminLoggedIn = false;
-    document.getElementById('adminDashboard').style.display = 'none';
-    document.getElementById('adminPanel').style.display = 'block';
-  }
-
-  // Load all users' data from localStorage
-  function loadAllUserData() {
-    const usersDataDiv = document.getElementById('usersData');
-    usersDataDiv.innerHTML = "";
-
-    // localStorage keys for users start with 'user_'
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key.startsWith("user_")) {
-        const user = key.slice(5);
-        const dataRaw = localStorage.getItem(key);
-        if (!dataRaw) continue;
-
-        let userData;
-        try {
-          userData = JSON.parse(dataRaw);
-        } catch {
-          continue;
-        }
-        if (!userData.submissions || userData.submissions.length === 0) continue;
-
-        // Display user info and submissions
-        const userDiv = document.createElement('div');
-        userDiv.innerHTML = `<strong>User: ${user}</strong> (${userData.submissions.length} submissions)`;
-
-        userData.submissions.forEach((sub, index) => {
-          const subDiv = document.createElement('div');
-          subDiv.style.marginLeft = "15px";
-          subDiv.style.borderTop = "1px dotted #aaa";
-          subDiv.style.paddingTop = "5px";
-          subDiv.innerHTML = `
-            <em>Submission #${index + 1}</em><br>
-            Time: ${new Date(sub.timestamp).toLocaleString()}<br>
-            Height: ${sub.height} cm<br>
-            Weight: ${sub.weight} kg<br>
-            BMI: ${sub.bmi}
-          `;
-          userDiv.appendChild(subDiv);
-        });
-        usersDataDiv.appendChild(userDiv);
-      }
-    }
-
-    if (!usersDataDiv.hasChildNodes()) {
-      usersDataDiv.textContent = "No user submissions found.";
-    }
-  }
+  bmiBar.style.backgroundColor = color;
+  calorieAdvice.textContent = calorieMsg;
+  healthTips.textContent = tips;
+}
 </script>
 </body>
 </html>
+
 
    
